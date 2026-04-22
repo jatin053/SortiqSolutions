@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+  <title id="title">Royal Crest storefront project preview</title>
+  <desc id="desc">A branded portfolio cover for the Royal Crest e-commerce storefront project.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#431407" />
+      <stop offset="100%" stop-color="#7c2d12" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)" />
+  <rect x="110" y="120" width="980" height="660" rx="38" fill="#fff7ed" />
+  <circle cx="930" cy="170" r="120" fill="#fdba74" fill-opacity="0.3" />
+  <rect x="160" y="190" width="220" height="28" rx="14" fill="#f97316" fill-opacity="0.2" />
+  <rect x="160" y="290" width="380" height="22" rx="11" fill="#fed7aa" />
+  <rect x="160" y="336" width="320" height="22" rx="11" fill="#fdba74" fill-opacity="0.5" />
+  <rect x="160" y="382" width="270" height="22" rx="11" fill="#e5e7eb" />
+  <rect x="690" y="235" width="280" height="400" rx="28" fill="#7c2d12" />
+  <rect x="730" y="285" width="200" height="26" rx="13" fill="#ffedd5" />
+  <rect x="730" y="352" width="72" height="72" rx="18" fill="#f97316" />
+  <rect x="818" y="352" width="112" height="72" rx="18" fill="#fdba74" />
+  <rect x="730" y="444" width="200" height="120" rx="24" fill="#fff7ed" fill-opacity="0.14" />
+  <text x="160" y="230" fill="#7c2d12" font-family="Arial, sans-serif" font-size="26" font-weight="700" letter-spacing="4">SHOPIFY</text>
+  <text x="160" y="502" fill="#431407" font-family="Arial, sans-serif" font-size="72" font-weight="700">Royal Crest Storefront</text>
+  <text x="160" y="561" fill="#7c2d12" font-family="Arial, sans-serif" font-size="28">Premium product showcase with strong merchandising and clear buying flows.</text>
+  <text x="160" y="694" fill="#ea580c" font-family="Arial, sans-serif" font-size="30" font-weight="700">Sortiq Solutions Portfolio</text>
+</svg>

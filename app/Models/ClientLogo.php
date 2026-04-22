@@ -1,0 +1,63 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+
+class ClientLogo extends Model
+{
+    protected $fillable = [
+        'name',
+        'slug',
+        'logo',
+        'website',
+        'description',
+        'sort_order',
+        'status',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'sort_order' => 'integer',
+        ];
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
+    public function scopePublished(Builder $query): Builder
+    {
+        $query->where('status', 'published');
+
+        return $query;
+    }
+
+    public function scopeOrdered(Builder $query): Builder
+    {
+        $query->orderBy('sort_order', 'asc');
+        $query->orderBy('name', 'asc');
+
+        return $query;
+    }
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (empty($this->logo)) {
+            return null;
+        }
+
+        if (
+            Str::startsWith($this->logo, 'http://') ||
+            Str::startsWith($this->logo, 'https://')
+        ) {
+            return $this->logo;
+        }
+
+        return asset($this->logo);
+    }
+}

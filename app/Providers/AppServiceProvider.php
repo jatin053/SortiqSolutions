@@ -1,0 +1,55 @@
+<?php
+
+namespace App\Providers;
+
+use App\Models\Blog;
+use App\Models\Review;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
+    {
+        //
+    }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        Schema::defaultStringLength(191);
+
+        View::composer(['frontend.*', 'layouts.frontend'], function ($view): void {
+            $reviews = Review::query()
+                ->published()
+                ->ordered()
+                ->limit(18)
+                ->get(['name', 'content', 'platform', 'rating', 'slug'])
+                ->map(fn (Review $review) => [
+                    'title' => $review->name,
+                    'content' => $review->content,
+                    'platform' => $review->platform,
+                    'rating' => $review->rating,
+                    'slug' => $review->slug,
+                ])
+                ->all();
+
+            $footerRecentBlogs = Blog::query()
+                ->published()
+                ->ordered()
+                ->limit(3)
+                ->get(['title', 'slug', 'published_at']);
+
+            $view->with([
+                'frontendReviewFeed' => $reviews,
+                'footerRecentBlogs' => $footerRecentBlogs,
+            ]);
+        });
+    }
+}

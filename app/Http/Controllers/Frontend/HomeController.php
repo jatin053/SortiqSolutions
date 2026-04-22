@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Http\Controllers\Frontend;
+
+use App\Http\Controllers\Controller;
+use App\Models\ClientLogo;
+use App\Models\Video;
+use App\Support\Seo\PageMeta;
+use Illuminate\View\View;
+
+class HomeController extends Controller
+{
+    public function index(): View
+    {
+        return view('frontend.home.home-page', [
+            'pageMeta' => PageMeta::custom(
+                'Sortiq Solutions provides web development, mobile app development, digital marketing, and scalable IT services for businesses that want reliable digital growth.'
+            ),
+            'homeClientLogos' => ClientLogo::query()
+                ->published()
+                ->ordered()
+                ->get(),
+            'homeVideos' => Video::query()
+                ->published()
+                ->ordered()
+                ->limit(4)
+                ->get(),
+        ]);
+    }
+}

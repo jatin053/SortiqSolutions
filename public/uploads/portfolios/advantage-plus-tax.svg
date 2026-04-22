@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+  <title id="title">Advantage Plus Tax project preview</title>
+  <desc id="desc">A branded portfolio cover for the Advantage Plus Tax portal project.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#111827" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)" />
+  <rect x="90" y="100" width="1020" height="700" rx="44" fill="#eff6ff" />
+  <rect x="90" y="100" width="1020" height="90" rx="44" fill="#dbeafe" />
+  <circle cx="145" cy="145" r="12" fill="#60a5fa" />
+  <circle cx="180" cy="145" r="12" fill="#38bdf8" />
+  <circle cx="215" cy="145" r="12" fill="#f97316" />
+  <rect x="170" y="250" width="250" height="28" rx="14" fill="#f97316" fill-opacity="0.16" />
+  <rect x="170" y="320" width="370" height="22" rx="11" fill="#cbd5e1" />
+  <rect x="170" y="364" width="320" height="22" rx="11" fill="#dbeafe" />
+  <rect x="170" y="408" width="290" height="22" rx="11" fill="#e2e8f0" />
+  <rect x="690" y="240" width="280" height="410" rx="28" fill="#0f172a" />
+  <rect x="735" y="290" width="190" height="18" rx="9" fill="#60a5fa" />
+  <rect x="735" y="338" width="150" height="18" rx="9" fill="#bfdbfe" />
+  <rect x="735" y="390" width="190" height="120" rx="24" fill="#1d4ed8" />
+  <rect x="735" y="530" width="140" height="56" rx="28" fill="#f97316" />
+  <text x="170" y="287" fill="#0f172a" font-family="Arial, sans-serif" font-size="26" font-weight="700" letter-spacing="4">LARAVEL</text>
+  <text x="170" y="522" fill="#0f172a" font-family="Arial, sans-serif" font-size="72" font-weight="700">Advantage Plus Tax</text>
+  <text x="170" y="581" fill="#334155" font-family="Arial, sans-serif" font-size="28">Secure client workflow with streamlined forms, services, and lead capture.</text>
+  <text x="170" y="694" fill="#1d4ed8" font-family="Arial, sans-serif" font-size="30" font-weight="700">Sortiq Solutions Portfolio</text>
+</svg>

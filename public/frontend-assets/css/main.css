@@ -1,0 +1,456 @@
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #ffffff;
+  color: #00142e;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+iconify-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+.mobile-overlay,
+.modal-overlay {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.mobile-overlay.is-open,
+.modal-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mobile-drawer {
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+.mobile-drawer.is-open {
+  transform: translateX(0);
+}
+
+.modal-shell {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal-shell.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-panel {
+  transform: scale(0.96);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.modal-panel.is-open {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.chatbot-panel {
+  display: none;
+}
+
+.chatbot-panel.is-open {
+  display: block;
+  animation: zoom-fade 0.25s ease;
+}
+
+.line-clamp-2,
+.line-clamp-3,
+.line-clamp-8 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  -webkit-line-clamp: 3;
+}
+
+.line-clamp-8 {
+  -webkit-line-clamp: 8;
+}
+
+[data-rich-content] img,
+.wp-content-styles img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+}
+
+[data-rich-content] iframe,
+.wp-content-styles iframe {
+  max-width: 100%;
+}
+
+[data-rich-content] table,
+.wp-content-styles table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+[data-rich-content] th,
+[data-rich-content] td,
+.wp-content-styles th,
+.wp-content-styles td {
+  border: 1px solid #e5e7eb;
+  padding: 0.75rem;
+}
+
+[data-rich-content] ul,
+[data-rich-content] ol,
+.wp-content-styles ul,
+.wp-content-styles ol {
+  padding-left: 1.5rem;
+  margin: 1rem 0 1.5rem;
+}
+
+[data-rich-content] blockquote,
+.wp-content-styles blockquote {
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  border-left: 4px solid #ff6600;
+  background: #fff7ed;
+  color: #7c2d12;
+}
+
+[data-rich-content] pre,
+.wp-content-styles pre {
+  overflow-x: auto;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+[data-rich-content] code,
+.wp-content-styles code {
+  font-family: "Fira Code", "SFMono-Regular", Consolas, monospace;
+}
+
+.faq-panel[hidden] {
+  display: none !important;
+}
+
+.testimonial-avatar-ring {
+  box-shadow: 0 14px 35px rgba(255, 106, 0, 0.2);
+}
+
+.portfolio-modal[hidden] {
+  display: none !important;
+}
+
+.client-grid-logo img {
+  object-fit: contain;
+}
+
+.client-network-section {
+  padding: 4rem 0 5rem;
+  background: linear-gradient(180deg, #f5f7fb 0%, #eef2f7 100%);
+  overflow: hidden;
+}
+
+.client-network-shell {
+  width: min(1200px, calc(100% - 3rem));
+  margin: 0 auto;
+}
+
+.client-network-heading {
+  text-align: center;
+  margin-bottom: 2.75rem;
+}
+
+.client-network-eyebrow {
+  margin: 0 0 0.55rem;
+  color: #ff6a00;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.client-network-title {
+  margin: 0;
+  color: #0a2540;
+  font-family: "Poppins", "Plus Jakarta Sans", sans-serif;
+  font-size: clamp(2.35rem, 5vw, 4.5rem);
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.client-network-title span {
+  color: #ff6a00;
+}
+
+.client-logo-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2rem 2.75rem;
+  align-items: center;
+}
+
+.client-logo-showcase-item,
+.client-marquee-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 108px;
+  padding: 0.75rem 1.25rem;
+}
+
+.client-logo-showcase-image,
+.client-marquee-logo {
+  display: block;
+  max-width: min(100%, 220px);
+  max-height: 62px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: grayscale(0.08);
+  opacity: 0.92;
+  transition: transform 0.35s ease, opacity 0.35s ease, filter 0.35s ease;
+}
+
+.client-logo-showcase-item:hover .client-logo-showcase-image,
+.client-marquee-item:hover .client-marquee-logo {
+  opacity: 1;
+  filter: grayscale(0);
+  transform: translateY(-2px);
+}
+
+.client-marquee {
+  position: relative;
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent 0, black 10%, black 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 10%, black 90%, transparent 100%);
+}
+
+.client-marquee-track {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  width: max-content;
+  animation: client-logo-marquee var(--client-marquee-duration, 24s) linear infinite;
+  will-change: transform;
+}
+
+.client-marquee:hover .client-marquee-track {
+  animation-play-state: paused;
+}
+
+.client-marquee-item {
+  flex: 0 0 clamp(180px, 20vw, 250px);
+}
+
+.client-network-empty {
+  padding: 2rem 2.25rem;
+  border: 1px solid #dbe1ea;
+  border-radius: 1.75rem;
+  background: #ffffff;
+  color: #667085;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+}
+
+.client-network-actions {
+  margin-top: 2.75rem;
+  text-align: center;
+}
+
+.client-network-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 0.85rem 2rem;
+  border-radius: 999px;
+  background: #ff6a00;
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 14px 30px rgba(255, 106, 0, 0.2);
+}
+
+.client-network-link:hover {
+  color: #ffffff;
+  background: #e85c00;
+  transform: translateY(-1px);
+  box-shadow: 0 18px 34px rgba(255, 106, 0, 0.24);
+}
+
+.hero-dotlottie dotlottie-player {
+  width: 100%;
+  height: 100%;
+}
+
+iframe,
+video {
+  max-width: 100%;
+}
+
+[data-rich-content],
+.wp-content-styles {
+  overflow-wrap: anywhere;
+}
+
+[data-rich-content] iframe,
+.wp-content-styles iframe {
+  display: block;
+  width: 100%;
+  min-height: 240px;
+}
+
+[data-rich-content] table,
+.wp-content-styles table {
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 1279px) {
+  .site-header {
+    position: sticky;
+    top: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .mobile-drawer {
+    max-width: min(100vw, 380px);
+  }
+
+  .modal-panel {
+    width: 100%;
+    max-height: calc(100dvh - 1.5rem);
+    overflow-y: auto;
+    border-radius: 1.5rem;
+  }
+
+  #chatbot-panel {
+    right: 1rem;
+    left: 1rem;
+    width: auto;
+    max-width: none;
+  }
+}
+
+@keyframes zoom-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes client-logo-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@media (max-width: 1023px) {
+  .client-logo-showcase-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.6rem 2rem;
+  }
+
+  .client-marquee-item {
+    flex-basis: clamp(160px, 32vw, 220px);
+  }
+}
+
+@media (max-width: 767px) {
+  .client-network-section {
+    padding: 3.25rem 0 4rem;
+  }
+
+  .client-network-shell {
+    width: min(100% - 2rem, 1200px);
+  }
+
+  .client-network-heading {
+    margin-bottom: 2.1rem;
+  }
+
+  .client-network-eyebrow {
+    font-size: 0.82rem;
+  }
+
+  .client-network-title {
+    font-size: clamp(2rem, 9vw, 3rem);
+  }
+
+  .client-logo-showcase-grid {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
+
+  .client-logo-showcase-item,
+  .client-marquee-item {
+    min-height: 92px;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .client-logo-showcase-image,
+  .client-marquee-logo {
+    max-height: 56px;
+    max-width: min(100%, 190px);
+  }
+
+  .client-marquee {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  .client-marquee-item {
+    flex-basis: clamp(150px, 48vw, 185px);
+  }
+
+  .client-network-actions {
+    margin-top: 2.2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .client-marquee-track {
+    animation: none;
+  }
+}
