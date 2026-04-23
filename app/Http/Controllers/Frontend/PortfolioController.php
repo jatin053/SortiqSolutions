@@ -48,10 +48,14 @@ class PortfolioController extends Controller
         });
 
         return view('frontend.portfolio.portfolio-page', [
-            'pageMeta' => PageMeta::custom(sprintf(
-                'Explore %d Sortiq Solutions portfolio projects in web design, development, e-commerce, and digital experiences built for growing businesses.',
-                $portfolios->count()
-            )),
+            'pageMeta' => PageMeta::custom(
+                $portfolios->isNotEmpty()
+                    ? sprintf(
+                        'Explore %d Sortiq Solutions portfolio projects in web design, development, e-commerce, and digital experiences built for growing businesses.',
+                        $portfolios->count()
+                    )
+                    : config('seo.descriptions.frontend.portfolio')
+            ),
             'portfolioItems' => $portfolioItems,
             'portfolioCategories' => $categories,
         ]);

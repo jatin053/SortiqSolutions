@@ -25,10 +25,14 @@ class ClientController extends Controller
 
         return view('frontend.clients.clients-page', [
             'clientLogos' => $clientLogos,
-            'pageMeta' => PageMeta::custom(sprintf(
-                'Explore %d trusted client logos from businesses that rely on Sortiq Solutions for web development, design, and digital growth services.',
-                $clientLogos->count()
-            )),
+            'pageMeta' => PageMeta::custom(
+                $clientLogos->isNotEmpty()
+                    ? sprintf(
+                        'Explore %d trusted client logos from businesses that rely on Sortiq Solutions for web development, design, and digital growth services.',
+                        $clientLogos->count()
+                    )
+                    : config('seo.descriptions.frontend.clients')
+            ),
         ]);
     }
 }

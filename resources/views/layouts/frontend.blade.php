@@ -8,7 +8,9 @@
     $resolvedPageMeta = ($pageMeta ?? null) instanceof \App\Support\Seo\PageMeta
         ? $pageMeta
         : \App\Support\Seo\PageMeta::forRoute($routeName);
-    $pageTitle = trim($__env->yieldContent('title', 'Sortiq Solutions Pvt. Ltd.'));
+    $sectionTitle = trim($__env->yieldContent('title'));
+    $routeTitle = trim((string) config("seo.titles.{$routeName}", ''));
+    $pageTitle = trim($resolvedPageMeta->title ?: $routeTitle ?: $sectionTitle ?: config('seo.default_title', 'Sortiq Solutions Pvt. Ltd.'));
     $pageDescription = trim(
         $__env->yieldContent(
             'meta_description',
@@ -212,7 +214,6 @@
       @stack('scripts')
     </body>
   </html>
-
 
 
 

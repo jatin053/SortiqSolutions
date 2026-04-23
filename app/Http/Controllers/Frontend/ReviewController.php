@@ -36,10 +36,14 @@ class ReviewController extends Controller
 
         return view('frontend.reviews.reviews-page', [
             'reviews' => $reviews,
-            'pageMeta' => PageMeta::custom(sprintf(
-                'Read %d client reviews and testimonials for Sortiq Solutions and see how our digital services support real business growth.',
-                $reviews->total()
-            )),
+            'pageMeta' => PageMeta::custom(
+                $reviews->total() > 0
+                    ? sprintf(
+                        'Read %d client reviews and testimonials for Sortiq Solutions and see how our digital services support real business growth.',
+                        $reviews->total()
+                    )
+                    : config('seo.descriptions.frontend.reviews')
+            ),
         ]);
     }
 
@@ -63,7 +67,9 @@ class ReviewController extends Controller
             'review' => $review,
             'recentReviews' => $recentReviews,
             'pageMeta' => PageMeta::article(
-                $review->summary ?: $review->content
+                $review->summary ?: $review->content,
+                null,
+                "{$review->name} Review | Sortiq Solutions"
             ),
         ]);
     }

@@ -158,7 +158,8 @@ class BlogController extends Controller
             'blog' => $blog,
             'pageMeta' => PageMeta::article(
                 $blog->excerpt ?: $blog->content,
-                $blog->image_url
+                $blog->image_url,
+                "{$blog->title} | Sortiq Solutions"
             ),
             'recentBlogs' => $recentBlogs,
         ]);

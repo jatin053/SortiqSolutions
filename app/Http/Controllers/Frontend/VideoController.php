@@ -25,10 +25,14 @@ class VideoController extends Controller
 
         return view('frontend.videos.videos-page', [
             'videos' => $videos,
-            'pageMeta' => PageMeta::custom(sprintf(
-                'Watch %d Sortiq Solutions videos on web development, digital marketing, design, and business-focused IT insights.',
-                $videos->count()
-            )),
+            'pageMeta' => PageMeta::custom(
+                $videos->isNotEmpty()
+                    ? sprintf(
+                        'Watch %d Sortiq Solutions videos on web development, digital marketing, design, and business-focused IT insights.',
+                        $videos->count()
+                    )
+                    : config('seo.descriptions.frontend.videos')
+            ),
         ]);
     }
 }
