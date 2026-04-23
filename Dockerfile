@@ -14,6 +14,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 COPY . /var/www/html
+COPY .docker/vhost.conf /etc/apache2/sites-available/000-default.conf
 
 RUN a2enmod rewrite
 
