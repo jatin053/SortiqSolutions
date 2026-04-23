@@ -7,6 +7,7 @@ use App\Models\Review;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,25 +27,32 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
 
         View::composer(['frontend.*', 'layouts.frontend'], function ($view): void {
-            $reviews = Review::query()
-                ->published()
-                ->ordered()
-                ->limit(18)
-                ->get(['name', 'content', 'platform', 'rating', 'slug'])
-                ->map(fn (Review $review) => [
-                    'title' => $review->name,
-                    'content' => $review->content,
-                    'platform' => $review->platform,
-                    'rating' => $review->rating,
-                    'slug' => $review->slug,
-                ])
-                ->all();
+            try {
+                $reviews = Review::query()
+                    ->published()
+                    ->ordered()
+                    ->limit(18)
+                    ->get(['name', 'content', 'platform', 'rating', 'slug'])
+                    ->map(fn (Review $review) => [
+                        'title' => $review->name,
+                        'content' => $review->content,
+                        'platform' => $review->platform,
+                        'rating' => $review->rating,
+                        'slug' => $review->slug,
+                    ])
+                    ->all();
 
-            $footerRecentBlogs = Blog::query()
-                ->published()
-                ->ordered()
-                ->limit(3)
-                ->get(['title', 'slug', 'published_at']);
+                $footerRecentBlogs = Blog::query()
+                    ->published()
+                    ->ordered()
+                    ->limit(3)
+                    ->get(['title', 'slug', 'published_at']);
+            } catch (Throwable $exception) {
+                report($exception);
+
+                $reviews = [];
+                $footerRecentBlogs = Blog::newCollection();
+            }
 
             $view->with([
                 'frontendReviewFeed' => $reviews,
