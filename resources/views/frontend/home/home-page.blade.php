@@ -152,13 +152,7 @@
       </div>
     </section>
   <section class="bg-[#05264e] text-white py-16 lg:py-20 overflow-hidden"><div class="max-w-[1200px] mx-auto px-6"><div class="grid lg:grid-cols-2 gap-10 items-center"><div class="flex justify-center"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/01/Explore-our-Web-Desing-Development-Projects.png" alt="Portfolio" class="w-full max-w-[450px] object-contain" loading="lazy"></img></div><div><p class="text-sm text-gray-300 mb-2">Our Expertise in IT Solutions</p><h2 class="text-3xl lg:text-4xl font-bold mb-4">Bringing <span class="text-orange-500">Ideas to Life</span></h2><div class="w-12 h-1 bg-orange-500 mb-6 rounded"></div><p class="text-gray-300 leading-relaxed text-justify mb-6">Have a glimpse at the range of innovative IT solutions delivered by Sortiq Solutions Pvt. Ltd. From cutting-edge web design to seamless development, we offer end-to-end services tailored to meet your business needs. Our team is dedicated to driving digital transformation through advanced technologies and creative strategies.</p><a href="/portfolio" class="inline-block bg-orange-500 hover:bg-orange-600 transition px-6 py-3 rounded font-semibold uppercase tracking-wider">BROWSE OUR PORTFOLIO</a></div></div></div></section>
-  <section data-testimonials-section class="bg-[#fcfdff] py-20 text-center px-4 overflow-hidden font-sans" style="word-spacing:0.6rem">
-    <div class="mb-12">
-      <h2 class="text-[32px] md:text-[46px] font-extrabold text-[#002d5b] tracking-tight">Client Success Stories</h2>
-      <div class="w-16 h-1 bg-[#ff6a00] mx-auto mt-4 rounded-full"></div>
-    </div>
-    <div class="py-16 text-center text-[#002d5b] font-medium">Loading testimonials...</div>
-  </section>
+  @include('components.frontend-testimonials')
 
     <div class="bg-[#0b2341] py-16 text-white font-raleway">
       <div class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
@@ -203,8 +197,44 @@
       <h2 class="text-[32px] md:text-[42px] font-bold text-[#002d5b]">Latest Insights</h2>
       <div class="w-12 h-[3px] bg-[#ff6a00] mx-auto mt-4"></div>
     </div>
-    <div id="blog-insights-grid" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-      <div class="md:col-span-3 py-24 text-center text-[#002d5b] font-medium min-h-[200px]">Loading Insights...</div>
+    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+      @forelse ($homeInsights as $blog)
+        @php
+          $excerpt = $blog['excerpt'] ?: \Illuminate\Support\Str::limit(strip_tags($blog['content']), 140);
+          $category = $blog['category'] ?: 'Tech';
+        @endphp
+
+        <article class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 group flex flex-col h-full">
+          <a href="{{ route('frontend.blog.show', $blog['slug']) }}" class="relative overflow-hidden rounded-t-2xl h-60 w-full bg-gray-200 block">
+            @if ($blog->image_url)
+              <img src="{{ $blog->image_url }}" alt="{{ $blog['title'] }}" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+            @else
+              <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#002d5b] to-[#004080]">
+                <span class="text-white text-sm font-semibold px-4 text-center opacity-70 line-clamp-3">{{ $blog['title'] }}</span>
+              </div>
+            @endif
+            <div class="absolute top-4 left-4 bg-[#ff6a00] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase">{{ $category }}</div>
+          </a>
+
+          <div class="p-8 flex flex-col flex-grow">
+            <p class="text-gray-400 text-xs mb-3 font-medium">{{ $blog->published_at?->format('F d, Y') }}</p>
+            <h3 class="text-xl font-bold text-[#002d5b] mb-4 line-clamp-2 leading-tight group-hover:text-[#ff6a00] transition-colors">
+              <a href="{{ route('frontend.blog.show', $blog['slug']) }}">{{ $blog['title'] }}</a>
+            </h3>
+            <p class="text-gray-500 text-sm leading-relaxed line-clamp-3 mb-6">{{ $excerpt }}</p>
+            <div class="mt-auto">
+              <a href="{{ route('frontend.blog.show', $blog['slug']) }}" class="text-[#ff6a00] font-bold text-sm inline-flex items-center gap-2 group/btn">
+                Read More
+                <span class="group-hover/btn:translate-x-2 transition-transform duration-300">&rarr;</span>
+              </a>
+            </div>
+          </div>
+        </article>
+      @empty
+        <div class="md:col-span-3 py-24 text-center text-[#002d5b] font-medium min-h-[200px]">
+          No insights available at the moment.
+        </div>
+      @endforelse
     </div>
     <div class="text-center mt-16">
       <a href="/blog" class="bg-[#002d5b] hover:bg-[#ff6600] text-white px-10 py-4 rounded-full font-bold transition-all duration-300 shadow-lg active:scale-95">View All Insights</a>

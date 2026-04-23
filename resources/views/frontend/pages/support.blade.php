@@ -334,13 +334,8 @@
 
       <div class="mt-10">
         
-  <section data-testimonials-section class="bg-[#fcfdff] py-20 text-center px-4 overflow-hidden font-sans" style="word-spacing:0.6rem">
-    <div class="mb-12">
-      <h2 class="text-[32px] md:text-[46px] font-extrabold text-[#002d5b] tracking-tight">Client Success Stories</h2>
-      <div class="w-16 h-1 bg-[#ff6a00] mx-auto mt-4 rounded-full"></div>
-    </div>
-    <div class="py-16 text-center text-[#002d5b] font-medium">Loading testimonials...</div>
-  </section>
+  @include('components.frontend-testimonials')
+
 
       </div>
 
@@ -357,6 +352,7 @@
     </div>
   </main>
 @endsection
+
 
 
 

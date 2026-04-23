@@ -47,6 +47,35 @@ class ContactMessageSubmissionTest extends TestCase
         });
     }
 
+    public function test_it_returns_api_usage_details_for_get_requests(): void
+    {
+        $response = $this->getJson('/api/contact-messages');
+
+        $response->assertOk()
+            ->assertJson([
+                'endpoint' => url('/api/contact-messages'),
+                'title' => 'Submit Contact Message',
+                'supported_methods' => ['POST'],
+            ])
+            ->assertJsonPath('request_fields.name.required', true)
+            ->assertJsonPath('request_fields.message.min', 10);
+    }
+
+    public function test_it_returns_all_api_docs_from_a_single_endpoint(): void
+    {
+        $response = $this->getJson('/api/docs');
+
+        $response->assertOk()
+            ->assertJson([
+                'name' => 'Sortiq Solutions API',
+                'documentation_url' => url('/api/docs'),
+                'doc_source' => 'config/api-docs.php',
+            ])
+            ->assertJsonPath('frontend_called_endpoints.0.path', '/api/contact-messages')
+            ->assertJsonPath('endpoints.contact_messages_store.method', 'POST')
+            ->assertJsonPath('endpoints.blogs_index.path', '/api/blogs');
+    }
+
     public function test_it_falls_back_to_site_settings_when_no_notification_email_is_configured(): void
     {
         Mail::fake();

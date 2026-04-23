@@ -46,4 +46,45 @@ class PortfolioProjectUrlTest extends TestCase
 
         $this->assertSame(url('flipbook/docs/index.html'), $portfolio->website_href);
     }
+
+    public function test_portfolio_category_filter_is_applied_on_the_server(): void
+    {
+        Portfolio::query()->create([
+            'title' => 'Laravel Showcase',
+            'slug' => 'laravel-showcase',
+            'category_name' => 'Laravel',
+            'category_slug' => 'laravel',
+            'image' => 'uploads/portfolio/laravel-showcase.jpg',
+            'website_url' => '/portfolio/laravel-showcase',
+            'summary' => 'Laravel project.',
+            'content' => 'Laravel portfolio content.',
+            'published_at' => now(),
+            'status' => 'published',
+            'sort_order' => 1,
+        ]);
+
+        Portfolio::query()->create([
+            'title' => 'Shopify Storefront',
+            'slug' => 'shopify-storefront',
+            'category_name' => 'Shopify',
+            'category_slug' => 'shopify',
+            'image' => 'uploads/portfolio/shopify-storefront.jpg',
+            'website_url' => '/portfolio/shopify-storefront',
+            'summary' => 'Shopify project.',
+            'content' => 'Shopify portfolio content.',
+            'published_at' => now(),
+            'status' => 'published',
+            'sort_order' => 2,
+        ]);
+
+        $response = $this->get('/portfolio?category=laravel');
+
+        $response->assertOk()
+            ->assertViewHas('activePortfolioCategory', 'laravel')
+            ->assertViewHas('portfolioItems', function ($items): bool {
+                return collect($items)->pluck('slug')->all() === ['laravel-showcase'];
+            })
+            ->assertSee('Laravel Showcase')
+            ->assertDontSee('Shopify Storefront');
+    }
 }

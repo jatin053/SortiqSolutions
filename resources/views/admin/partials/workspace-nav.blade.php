@@ -43,6 +43,13 @@
             'caption' => 'Brand credibility',
         ],
         [
+            'label' => 'Pages',
+            'route' => route('admin.pages.edit'),
+            'match' => 'admin.pages.*',
+            'icon' => 'PG',
+            'caption' => 'Page metadata',
+        ],
+        [
             'label' => 'Messages',
             'route' => route('admin.contact-messages.index'),
             'match' => 'admin.contact-messages.*',

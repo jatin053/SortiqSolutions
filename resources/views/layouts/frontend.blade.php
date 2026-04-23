@@ -1,10 +1,13 @@
 
   <!doctype html>
 @php
-    $recaptchaEnabled = \App\Support\Recaptcha::enabledForRequest(request());
     $contactApiUrl = route('api.contact-messages.store');
     $whatsappNumber = '919646522110';
     $routeName = request()->route()?->getName();
+    $recaptchaEnabled = \App\Support\Recaptcha::enabledForRequest(request())
+        && request()->routeIs('frontend.contact', 'frontend.internship');
+    $usesDotLottie = request()->routeIs('frontend.home');
+    $viteManifestExists = is_file(public_path('build/manifest.json'));
     $resolvedPageMeta = ($pageMeta ?? null) instanceof \App\Support\Seo\PageMeta
         ? $pageMeta
         : \App\Support\Seo\PageMeta::forRoute($routeName);
@@ -20,6 +23,9 @@
     $pageImage = trim($__env->yieldContent('meta_image', $resolvedPageMeta->image));
     $pageType = trim($__env->yieldContent('meta_type', $resolvedPageMeta->type));
     $canonicalUrl = url()->current();
+    $inlineFrontendCss = is_file(public_path('frontend-assets/css/main.css'))
+        ? file_get_contents(public_path('frontend-assets/css/main.css'))
+        : null;
 @endphp
   <html lang="en">
     <head>
@@ -38,30 +44,37 @@
       <meta name="twitter:description" content="{{ $pageDescription }}">
       <meta name="twitter:image" content="{{ $pageImage }}">
       @include('partials.favicon-links', ['faviconVersion' => '20260420b'])
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Poppins:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Raleway:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-      <script>
-        window.tailwind = window.tailwind || {};
-        window.tailwind.config = {
-          theme: {
-            extend: {
-              fontFamily: {
-                sans: ['Inter', 'sans-serif'],
-                title: ['Poppins', 'sans-serif'],
-                raleway: ['Raleway', 'sans-serif']
+      @if ($recaptchaEnabled)
+        <link rel="dns-prefetch" href="//www.google.com">
+        <link rel="dns-prefetch" href="//www.gstatic.com">
+      @endif
+      @if ($viteManifestExists)
+        @vite('resources/css/app.css')
+      @else
+        <script>
+          window.tailwind = window.tailwind || {};
+          window.tailwind.config = {
+            theme: {
+              extend: {
+                fontFamily: {
+                  sans: ['ui-sans-serif', 'system-ui', 'sans-serif'],
+                  title: ['ui-sans-serif', 'system-ui', 'sans-serif'],
+                  raleway: ['ui-sans-serif', 'system-ui', 'sans-serif']
+                }
               }
             }
-          }
-        };
-      </script>
-      <script src="https://cdn.tailwindcss.com"></script>
-      <script src="https://code.iconify.design/iconify-icon/1.0.8/iconify-icon.min.js"></script>
-      <script type="module" src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs"></script>
+          };
+        </script>
+        <script src="https://cdn.tailwindcss.com"></script>
+      @endif
       @if ($recaptchaEnabled)
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
       @endif
-      <link rel="stylesheet" href="/frontend-assets/css/main.css">
+      @if ($inlineFrontendCss)
+        <style>{!! $inlineFrontendCss !!}</style>
+      @else
+        <link rel="stylesheet" href="/frontend-assets/css/main.css">
+      @endif
       @if (! $recaptchaEnabled)
         <style>
           .g-recaptcha {
@@ -80,6 +93,52 @@
           }
         </style>
       @endif
+      <script>
+        window.__sortiqRunWhenIdle = (callback) => {
+          if ("requestIdleCallback" in window) {
+            window.requestIdleCallback(callback, { timeout: 1800 });
+            return;
+          }
+
+          window.setTimeout(callback, 600);
+        };
+
+        window.__sortiqInjectScript = (src, attributes = {}) => {
+          if (!src || document.querySelector(`script[src="${src}"]`)) {
+            return;
+          }
+
+          const script = document.createElement("script");
+          script.src = src;
+
+          Object.entries(attributes).forEach(([key, value]) => {
+            if (value === true) {
+              script.setAttribute(key, "");
+              return;
+            }
+
+            script.setAttribute(key, String(value));
+          });
+
+          document.head.appendChild(script);
+        };
+
+        window.addEventListener("load", () => {
+          window.__sortiqRunWhenIdle(() => {
+            window.__sortiqInjectScript("https://code.iconify.design/iconify-icon/1.0.8/iconify-icon.min.js", {
+              defer: true,
+            });
+          });
+
+          @if ($usesDotLottie)
+            window.__sortiqRunWhenIdle(() => {
+              window.__sortiqInjectScript("https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs", {
+                type: "module",
+              });
+            });
+          @endif
+        }, { once: true });
+      </script>
       @include('components.frontend-data-scripts')
       @stack('head')
     </head>
@@ -140,7 +199,7 @@
     <div class="relative h-full flex items-center justify-center p-4 font-['Plus_Jakarta_Sans',sans-serif]">
       <div class="modal-panel relative w-full max-w-5xl bg-white rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row shadow-2xl">
         <div class="hidden md:block w-5/12 relative">
-          <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1000" class="absolute inset-0 w-full h-full object-cover" alt="Hiring">
+          <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1000" class="absolute inset-0 w-full h-full object-cover" alt="Hiring" loading="lazy" decoding="async">
           <div class="absolute inset-0 bg-gradient-to-b from-[#FF5722]/40 to-[#00142e]/90 flex flex-col justify-end p-10">
             <h2 class="text-white text-4xl font-extrabold leading-tight mb-2">Kickstart Your Career</h2>
             <p class="text-white/80 font-medium">Join Sortiq Solutions and work on world-class projects.</p>
@@ -214,6 +273,3 @@
       @stack('scripts')
     </body>
   </html>
-
-
-

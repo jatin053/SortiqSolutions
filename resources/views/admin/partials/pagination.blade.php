@@ -2,10 +2,22 @@
     @php
         $currentPage = $paginator->currentPage();
         $lastPage = $paginator->lastPage();
-        $visiblePages = collect([1, $currentPage - 1, $currentPage, $currentPage + 1, $lastPage])
-            ->filter(fn ($page) => $page >= 1 && $page <= $lastPage)
-            ->unique()
-            ->values();
+        $pageNumbers = [1, $currentPage - 1, $currentPage, $currentPage + 1, $lastPage];
+        $visiblePages = [];
+
+        foreach ($pageNumbers as $pageNumber) {
+            if ($pageNumber < 1 || $pageNumber > $lastPage) {
+                continue;
+            }
+
+            if (in_array($pageNumber, $visiblePages, true)) {
+                continue;
+            }
+
+            $visiblePages[] = $pageNumber;
+        }
+
+        $previousVisiblePage = null;
     @endphp
 
     <div class="admin-pagination" aria-label="{{ $label ?? 'Pagination' }}">
@@ -22,7 +34,7 @@
                 @endif
 
                 @foreach ($visiblePages as $page)
-                    @if (! $loop->first && $page - $visiblePages[$loop->index - 1] > 1)
+                    @if ($previousVisiblePage !== null && $page - $previousVisiblePage > 1)
                         <span class="admin-pagination-ellipsis" aria-hidden="true">...</span>
                     @endif
 
@@ -31,6 +43,10 @@
                     @else
                         <a href="{{ $paginator->url($page) }}" class="admin-pagination-link">{{ $page }}</a>
                     @endif
+
+                    @php
+                        $previousVisiblePage = $page;
+                    @endphp
                 @endforeach
 
                 @if ($paginator->hasMorePages())

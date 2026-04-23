@@ -17,6 +17,11 @@ use Throwable;
 
 class ContactMessageController extends Controller
 {
+    public function describe(): JsonResponse
+    {
+        return response()->json(ApiDocumentationController::contactEndpointDocumentation());
+    }
+
     public function store(ContactMessageRequest $request): JsonResponse
     {
         $data = $request->validated();

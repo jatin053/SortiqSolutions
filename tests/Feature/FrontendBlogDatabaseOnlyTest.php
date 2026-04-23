@@ -75,7 +75,7 @@ class FrontendBlogDatabaseOnlyTest extends TestCase
             'status' => 'published',
         ]);
 
-        $response = $this->get('/sortiqsolution');
+        $response = $this->get(route('frontend.home'));
 
         $response->assertOk()
             ->assertSee('Newest Footer Blog')

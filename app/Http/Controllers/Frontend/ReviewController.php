@@ -13,38 +13,12 @@ use Throwable;
 
 class ReviewController extends Controller
 {
+    private const REVIEWS_PER_PAGE = 9;
+
     public function index(): View
     {
-        try {
-            $reviews = Review::query()
-                ->published()
-                ->ordered()
-                ->paginate(9);
-        } catch (Throwable $exception) {
-            report($exception);
-
-            $reviews = new LengthAwarePaginator(
-                collect(),
-                0,
-                9,
-                Paginator::resolveCurrentPage(),
-                [
-                    'path' => Paginator::resolveCurrentPath(),
-                    'pageName' => 'page',
-                ]
-            );
-        }
-
         return view('frontend.reviews.reviews-page', [
-            'reviews' => $reviews,
-            'pageMeta' => PageMeta::custom(
-                $reviews->total() > 0
-                    ? sprintf(
-                        'Read %d client reviews and testimonials for Sortiq Solutions and see how our digital services support real business growth.',
-                        $reviews->total()
-                    )
-                    : PageMeta::descriptionForRoute('frontend.reviews')
-            ),
+            'reviews' => $this->reviews(),
         ]);
     }
 
@@ -58,13 +32,41 @@ class ReviewController extends Controller
             return redirect()->route('frontend.reviews');
         }
 
-        abort_unless($review && ($review->status === 'published' || auth()->check()), 404);
+        if (! $review || (! auth()->check() && $review->status !== 'published')) {
+            abort(404);
+        }
 
+        $this->recordView($review);
+
+        return view('frontend.reviews.show', [
+            'review' => $review,
+            'recentReviews' => $this->recentReviews($review),
+            'pageMeta' => PageMeta::article(
+                $review->summary ?: $review->content,
+                null,
+                "{$review->name} Review | Sortiq Solutions"
+            ),
+        ]);
+    }
+
+    private function reviews(): LengthAwarePaginator
+    {
         try {
-            $review->increment('views');
-            $review->refresh();
+            return Review::query()
+                ->published()
+                ->ordered()
+                ->paginate(self::REVIEWS_PER_PAGE);
+        } catch (Throwable $exception) {
+            report($exception);
 
-            $recentReviews = Review::query()
+            return $this->emptyReviewPaginator();
+        }
+    }
+
+    private function recentReviews(Review $review)
+    {
+        try {
+            return Review::query()
                 ->published()
                 ->whereKeyNot($review->getKey())
                 ->ordered()
@@ -73,17 +75,31 @@ class ReviewController extends Controller
         } catch (Throwable $exception) {
             report($exception);
 
-            $recentReviews = collect();
+            return collect();
         }
+    }
 
-        return view('frontend.reviews.show', [
-            'review' => $review,
-            'recentReviews' => $recentReviews,
-            'pageMeta' => PageMeta::article(
-                $review->summary ?: $review->content,
-                null,
-                "{$review->name} Review | Sortiq Solutions"
-            ),
-        ]);
+    private function recordView(Review $review): void
+    {
+        try {
+            $review->increment('views');
+            $review->refresh();
+        } catch (Throwable $exception) {
+            report($exception);
+        }
+    }
+
+    private function emptyReviewPaginator(): LengthAwarePaginator
+    {
+        return new LengthAwarePaginator(
+            collect(),
+            0,
+            self::REVIEWS_PER_PAGE,
+            Paginator::resolveCurrentPage(),
+            [
+                'path' => Paginator::resolveCurrentPath(),
+                'pageName' => 'page',
+            ]
+        );
     }
 }

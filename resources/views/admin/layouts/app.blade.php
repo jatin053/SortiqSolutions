@@ -1,4 +1,27 @@
 @php
+    $pageFilterGroups = collect(\App\Support\Seo\SeoPageCatalog::pages())
+        ->groupBy('section')
+        ->map(
+            fn ($pages, $section) => [
+                'section' => $section,
+                'pages' => collect($pages)
+                    ->map(
+                        fn ($pageOption) => [
+                            'label' => $pageOption['label'],
+                            'route_name' => $pageOption['route_name'],
+                        ]
+                    )
+                    ->values()
+                    ->all(),
+            ]
+        )
+        ->values()
+        ->all();
+
+    $selectedSidebarPage = request()->routeIs('admin.pages.*')
+        ? trim((string) request()->query('page'))
+        : '';
+
     $navigationItems = [
         [
             'label' => 'Dashboard',
@@ -41,6 +64,13 @@
             'match' => 'admin.client-logos.*',
             'icon' => 'CL',
             'caption' => 'Brand assets and credibility blocks.',
+        ],
+        [
+            'label' => 'Pages',
+            'match' => 'admin.pages.*',
+            'icon' => 'PG',
+            'caption' => 'Meta titles and descriptions for public pages.',
+            'page_filter_groups' => $pageFilterGroups,
         ],
         [
             'label' => 'Messages',
@@ -116,15 +146,69 @@
 
         <ul class="sidebar-nav">
             @foreach ($navigationItems as $item)
-                <li class="{{ request()->routeIs($item['match']) ? 'active' : '' }}">
-                    <a href="{{ $item['route'] }}">
-                        <span class="nav-icon">{{ $item['icon'] }}</span>
-                        <span class="sidebar-link-copy">
-                            <strong>{{ $item['label'] }}</strong>
-                            <small>{{ $item['caption'] }}</small>
-                        </span>
-                    </a>
-                </li>
+                @if (! empty($item['page_filter_groups']))
+                    <li
+                        class="{{ request()->routeIs($item['match']) ? 'active is-submenu-open' : '' }}"
+                        data-sidebar-dropdown-item
+                    >
+                        <div class="sidebar-dropdown-row">
+                            <a
+                                href="{{ route('admin.pages.edit') }}"
+                                class="sidebar-dropdown-link {{ request()->routeIs('admin.pages.*') && $selectedSidebarPage === '' ? 'is-current' : '' }}"
+                            >
+                                <span class="sidebar-link-main">
+                                    <span class="nav-icon">{{ $item['icon'] }}</span>
+                                    <span class="sidebar-link-copy">
+                                        <strong>{{ $item['label'] }}</strong>
+                                        <small>{{ $item['caption'] }}</small>
+                                    </span>
+                                </span>
+                            </a>
+
+                            <button
+                                type="button"
+                                class="sidebar-dropdown-toggle"
+                                data-sidebar-dropdown-toggle
+                                aria-expanded="{{ request()->routeIs($item['match']) ? 'true' : 'false' }}"
+                                aria-label="Toggle page list"
+                            >
+                                <span class="screen-reader-text">Toggle page list</span>
+                                <span class="sidebar-link-arrow" aria-hidden="true">&#9662;</span>
+                            </button>
+                        </div>
+
+                        <div class="sidebar-submenu">
+                            <div class="sidebar-page-groups">
+                                @foreach ($item['page_filter_groups'] as $pageGroup)
+                                    <div class="sidebar-page-group">
+                                        <span class="sidebar-submenu-label">{{ $pageGroup['section'] }}</span>
+
+                                        <div class="sidebar-page-links">
+                                            @foreach ($pageGroup['pages'] as $pageOption)
+                                                <a
+                                                    href="{{ route('admin.pages.edit', ['page' => $pageOption['route_name']]) }}"
+                                                    class="sidebar-submenu-link sidebar-submenu-link--page {{ $selectedSidebarPage === $pageOption['route_name'] ? 'is-current' : '' }}"
+                                                >
+                                                    {{ $pageOption['label'] }}
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </li>
+                @else
+                    <li class="{{ request()->routeIs($item['match']) ? 'active' : '' }}">
+                        <a href="{{ $item['route'] }}">
+                            <span class="nav-icon">{{ $item['icon'] }}</span>
+                            <span class="sidebar-link-copy">
+                                <strong>{{ $item['label'] }}</strong>
+                                <small>{{ $item['caption'] }}</small>
+                            </span>
+                        </a>
+                    </li>
+                @endif
             @endforeach
         </ul>
 
@@ -206,10 +290,42 @@
         const openButton = document.querySelector('[data-admin-sidebar-open]');
         const closeButtons = document.querySelectorAll('[data-admin-sidebar-close]');
         const navLinks = document.querySelectorAll('.sidebar a');
+        const dropdownItems = document.querySelectorAll('[data-sidebar-dropdown-item]');
+        const dropdownButtons = document.querySelectorAll('[data-sidebar-dropdown-toggle]');
 
         if (!shell || !openButton) {
             return;
         }
+
+        const closeDropdown = (item) => {
+            const button = item.querySelector('[data-sidebar-dropdown-toggle]');
+
+            item.classList.remove('is-submenu-open');
+
+            if (button) {
+                button.setAttribute('aria-expanded', 'false');
+            }
+        };
+
+        const openDropdown = (item) => {
+            const button = item.querySelector('[data-sidebar-dropdown-toggle]');
+
+            item.classList.add('is-submenu-open');
+
+            if (button) {
+                button.setAttribute('aria-expanded', 'true');
+            }
+        };
+
+        const closeOtherDropdowns = (currentItem = null) => {
+            dropdownItems.forEach((item) => {
+                if (item === currentItem) {
+                    return;
+                }
+
+                closeDropdown(item);
+            });
+        };
 
         const closeSidebar = () => {
             shell.classList.remove('is-sidebar-open');
@@ -236,6 +352,27 @@
             button.addEventListener('click', closeSidebar);
         });
 
+        dropdownButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const item = button.closest('[data-sidebar-dropdown-item]');
+
+                if (!item) {
+                    return;
+                }
+
+                const isOpen = item.classList.contains('is-submenu-open');
+
+                closeOtherDropdowns(isOpen ? null : item);
+
+                if (isOpen) {
+                    closeDropdown(item);
+                    return;
+                }
+
+                openDropdown(item);
+            });
+        });
+
         navLinks.forEach((link) => {
             link.addEventListener('click', () => {
                 if (window.innerWidth <= 980) {
@@ -246,6 +383,7 @@
 
         window.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
+                closeOtherDropdowns();
                 closeSidebar();
             }
         });

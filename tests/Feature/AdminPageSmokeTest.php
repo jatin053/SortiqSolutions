@@ -18,6 +18,7 @@ class AdminPageSmokeTest extends TestCase
 
         $pages = [
             route('admin.dashboard'),
+            route('admin.pages.edit'),
             route('admin.blogs.index'),
             route('admin.portfolios.index'),
             route('admin.videos.index'),

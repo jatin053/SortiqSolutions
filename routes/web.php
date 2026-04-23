@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\ClientLogoController;
 use App\Http\Controllers\Admin\ContactMessageController as AdminContactMessageController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\PageMetaController;
 use App\Http\Controllers\Admin\PortfolioController as AdminPortfolioController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\ReviewController;
@@ -100,6 +101,11 @@ Route::prefix('sortiqadmin')->name('admin.')->group(function () use ($registerAd
         Route::controller(SiteLayoutSettingController::class)->group(function () {
             Route::get('/site-layout', 'edit')->name('site-layout.edit');
             Route::put('/site-layout', 'update')->name('site-layout.update');
+        });
+
+        Route::controller(PageMetaController::class)->group(function () {
+            Route::get('/pages', 'edit')->name('pages.edit');
+            Route::put('/pages', 'update')->name('pages.update');
         });
 
         $registerAdminResourceRoutes('blogs', 'blogs', BlogController::class, 'blog');

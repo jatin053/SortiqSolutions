@@ -17,77 +17,23 @@ use Throwable;
 
 class BlogController extends Controller
 {
+    private const BLOGS_PER_PAGE = 6;
+
     public function index(Request $request): View
     {
         $searchTerm = trim((string) $request->query('search'));
         $activeCategory = trim((string) $request->query('category'));
+        $categories = $this->categories();
+        $categoryMap = $this->categoryMap($categories);
 
-        try {
-            $categoryQuery = Blog::query()
-                ->published()
-                ->whereNotNull('category')
-                ->where('category', '!=', '');
-
-            $categoryMap = (clone $categoryQuery)
-                ->pluck('category')
-                ->unique()
-                ->mapWithKeys(fn (string $category) => [Str::slug($category) => $category]);
-
-            $blogsQuery = $this->publishedBlogsQuery();
-
-            if ($searchTerm !== '') {
-                $blogsQuery->where(function ($query) use ($searchTerm) {
-                    $query->where('title', 'like', "%{$searchTerm}%")
-                        ->orWhere('excerpt', 'like', "%{$searchTerm}%")
-                        ->orWhere('content', 'like', "%{$searchTerm}%");
-                });
-            }
-
-            if ($activeCategory !== '' && $categoryMap->has($activeCategory)) {
-                $blogsQuery->where('category', $categoryMap->get($activeCategory));
-            }
-
-            $categories = (clone $categoryQuery)
-                ->selectRaw('category, COUNT(*) as total')
-                ->groupBy('category')
-                ->orderBy('category')
-                ->get()
-                ->map(function ($item) {
-                    return (object) [
-                        'name' => $item->category,
-                        'slug' => Str::slug($item->category),
-                        'total' => $item->total,
-                    ];
-                });
-
-            $blogs = $blogsQuery->paginate(6)->withQueryString();
-            $recentBlogs = $this->publishedBlogsQuery()
-                ->limit(5)
-                ->get();
-        } catch (Throwable $exception) {
-            report($exception);
-
-            $categories = collect();
-            $blogs = new LengthAwarePaginator(
-                collect(),
-                0,
-                6,
-                Paginator::resolveCurrentPage(),
-                [
-                    'path' => Paginator::resolveCurrentPath(),
-                    'pageName' => 'page',
-                ]
-            );
-            $recentBlogs = collect();
+        if ($activeCategory !== '' && ! array_key_exists($activeCategory, $categoryMap)) {
+            $activeCategory = '';
         }
 
         return view('frontend.blog.blog-list', [
-            'blogs' => $blogs,
+            'blogs' => $this->blogs($searchTerm, $activeCategory, $categoryMap),
             'categories' => $categories,
-            'pageMeta' => PageMeta::custom(
-                'Read the latest Sortiq Solutions blog posts on web design, development, digital marketing, and practical IT insights for growing businesses.'
-            ),
-            'recentBlogs' => $recentBlogs,
+            'recentBlogs' => $this->recentBlogs(),
             'searchTerm' => $searchTerm,
             'activeCategory' => $activeCategory,
         ]);
@@ -142,37 +88,16 @@ class BlogController extends Controller
         }
 
         if (! $blog) {
-            $canonicalSlug = collect(config('frontend-routes.legacy_blogs', []))
-                ->search($slug, strict: true);
+            $legacyRedirect = $this->legacyBlogRedirect($slug);
 
-            if (is_string($canonicalSlug)) {
-                try {
-                    if (Blog::query()->where('slug', $canonicalSlug)->exists()) {
-                        return redirect()->route('frontend.blog.show', $canonicalSlug, 301);
-                    }
-                } catch (Throwable $exception) {
-                    report($exception);
-
-                    return redirect()->route('frontend.blog.index');
-                }
+            if ($legacyRedirect) {
+                return $legacyRedirect;
             }
 
             abort(404);
         }
 
-        try {
-            $blog->increment('views');
-            $blog->refresh();
-
-            $recentBlogs = $this->publishedBlogsQuery()
-                ->whereKeyNot($blog->getKey())
-                ->limit(3)
-                ->get();
-        } catch (Throwable $exception) {
-            report($exception);
-
-            $recentBlogs = collect();
-        }
+        $this->recordBlogView($blog);
 
         return view('frontend.blog.show', [
             'blog' => $blog,
@@ -181,12 +106,140 @@ class BlogController extends Controller
                 $blog->image_url,
                 "{$blog->title} | Sortiq Solutions"
             ),
-            'recentBlogs' => $recentBlogs,
+            'recentBlogs' => $this->recentBlogs($blog, 3),
         ]);
+    }
+
+    private function categories()
+    {
+        try {
+            return Blog::query()
+                ->published()
+                ->whereNotNull('category')
+                ->where('category', '!=', '')
+                ->selectRaw('category, COUNT(*) as total')
+                ->groupBy('category')
+                ->orderBy('category')
+                ->get()
+                ->map(function ($item) {
+                    return (object) [
+                        'name' => $item->category,
+                        'slug' => Str::slug($item->category),
+                        'total' => $item->total,
+                    ];
+                });
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return collect();
+        }
+    }
+
+    private function categoryMap($categories): array
+    {
+        $categoryMap = [];
+
+        foreach ($categories as $category) {
+            $categoryMap[$category->slug] = $category->name;
+        }
+
+        return $categoryMap;
+    }
+
+    private function blogs(string $searchTerm, string $activeCategory, array $categoryMap): LengthAwarePaginator
+    {
+        try {
+            $blogsQuery = $this->publishedBlogsQuery();
+
+            if ($searchTerm !== '') {
+                $blogsQuery->where(function ($query) use ($searchTerm) {
+                    $query->where('title', 'like', "%{$searchTerm}%")
+                        ->orWhere('excerpt', 'like', "%{$searchTerm}%")
+                        ->orWhere('content', 'like', "%{$searchTerm}%");
+                });
+            }
+
+            if ($activeCategory !== '') {
+                $blogsQuery->where('category', $categoryMap[$activeCategory]);
+            }
+
+            return $blogsQuery
+                ->paginate(self::BLOGS_PER_PAGE)
+                ->withQueryString();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return $this->emptyBlogsPaginator();
+        }
+    }
+
+    private function recentBlogs(?Blog $blog = null, int $limit = 5)
+    {
+        try {
+            $recentBlogsQuery = $this->publishedBlogsQuery();
+
+            if ($blog) {
+                $recentBlogsQuery->whereKeyNot($blog->getKey());
+            }
+
+            return $recentBlogsQuery
+                ->limit($limit)
+                ->get();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return collect();
+        }
+    }
+
+    private function legacyBlogRedirect(string $slug): ?RedirectResponse
+    {
+        $canonicalSlug = collect(config('frontend-routes.legacy_blogs', []))
+            ->search($slug, strict: true);
+
+        if (! is_string($canonicalSlug)) {
+            return null;
+        }
+
+        try {
+            if (Blog::query()->where('slug', $canonicalSlug)->exists()) {
+                return redirect()->route('frontend.blog.show', $canonicalSlug, 301);
+            }
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return redirect()->route('frontend.blog.index');
+        }
+
+        return null;
+    }
+
+    private function recordBlogView(Blog $blog): void
+    {
+        try {
+            $blog->increment('views');
+            $blog->refresh();
+        } catch (Throwable $exception) {
+            report($exception);
+        }
     }
 
     private function publishedBlogsQuery(): Builder
     {
         return Blog::query()->published()->ordered();
+    }
+
+    private function emptyBlogsPaginator(): LengthAwarePaginator
+    {
+        return new LengthAwarePaginator(
+            collect(),
+            0,
+            self::BLOGS_PER_PAGE,
+            Paginator::resolveCurrentPage(),
+            [
+                'path' => Paginator::resolveCurrentPath(),
+                'pageName' => 'page',
+            ]
+        );
     }
 }
