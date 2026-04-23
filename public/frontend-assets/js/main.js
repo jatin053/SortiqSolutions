@@ -828,14 +828,23 @@ const initPortfoliosPage = async () => {
     const items = filtered.slice((state.page - 1) * state.perPage, state.page * state.perPage);
 
     loading?.classList.add("hidden");
-    grid.innerHTML = items.map((item) => `
-      <button data-portfolio-item="${escapeHtml(String(item.id))}" class="group relative overflow-hidden rounded-2xl aspect-[4/3] cursor-pointer bg-gray-100 shadow-sm text-left">
-        <img src="${escapeHtml(normalizeAssetUrl(item.featured_media_url || ""))}" class="w-full h-full object-cover transition-transform group-hover:scale-105" alt="${escapeHtml(item.title || "")}">
-        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6">
-          <h3 class="text-white font-bold">${escapeHtml(item.title || "")}</h3>
+    grid.innerHTML = items.length
+      ? items.map((item) => `
+        <button data-portfolio-item="${escapeHtml(String(item.id))}" class="group relative overflow-hidden rounded-2xl aspect-[4/3] cursor-pointer bg-gray-100 shadow-sm text-left">
+          <img src="${escapeHtml(normalizeAssetUrl(item.featured_media_url || ""))}" class="w-full h-full object-cover transition-transform group-hover:scale-105" alt="${escapeHtml(item.title || "")}">
+          <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6">
+            <h3 class="text-white font-bold">${escapeHtml(item.title || "")}</h3>
+          </div>
+        </button>
+      `).join("")
+      : `
+        <div class="col-span-full rounded-3xl border border-gray-200 bg-white px-6 py-16 text-center text-gray-500 shadow-sm">
+          <h3 class="text-xl font-black text-[#001a3d]">No portfolio projects available yet.</h3>
+          <p class="mx-auto mt-3 max-w-2xl text-sm leading-6">
+            Portfolio items will appear here after the live database is connected and published projects are added.
+          </p>
         </div>
-      </button>
-    `).join("");
+      `;
 
     filterButtons.forEach((button) => {
       const active = button.getAttribute("data-portfolio-category") === state.activeSlug;
