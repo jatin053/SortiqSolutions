@@ -127,32 +127,52 @@ class BlogController extends Controller
 
     public function show(string $slug): View|RedirectResponse
     {
-        $blog = Blog::query()
-            ->when(
-                ! auth()->check(),
-                fn (Builder $query) => $query->published(),
-            )
-            ->where('slug', $slug)
-            ->first();
+        try {
+            $blog = Blog::query()
+                ->when(
+                    ! auth()->check(),
+                    fn (Builder $query) => $query->published(),
+                )
+                ->where('slug', $slug)
+                ->first();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return redirect()->route('frontend.blog.index');
+        }
 
         if (! $blog) {
             $canonicalSlug = collect(config('frontend-routes.legacy_blogs', []))
                 ->search($slug, strict: true);
 
-            if (is_string($canonicalSlug) && Blog::query()->where('slug', $canonicalSlug)->exists()) {
-                return redirect()->route('frontend.blog.show', $canonicalSlug, 301);
+            if (is_string($canonicalSlug)) {
+                try {
+                    if (Blog::query()->where('slug', $canonicalSlug)->exists()) {
+                        return redirect()->route('frontend.blog.show', $canonicalSlug, 301);
+                    }
+                } catch (Throwable $exception) {
+                    report($exception);
+
+                    return redirect()->route('frontend.blog.index');
+                }
             }
 
             abort(404);
         }
 
-        $blog->increment('views');
-        $blog->refresh();
+        try {
+            $blog->increment('views');
+            $blog->refresh();
 
-        $recentBlogs = $this->publishedBlogsQuery()
-            ->whereKeyNot($blog->getKey())
-            ->limit(3)
-            ->get();
+            $recentBlogs = $this->publishedBlogsQuery()
+                ->whereKeyNot($blog->getKey())
+                ->limit(3)
+                ->get();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            $recentBlogs = collect();
+        }
 
         return view('frontend.blog.show', [
             'blog' => $blog,

@@ -31,7 +31,7 @@ class ClientController extends Controller
                         'Explore %d trusted client logos from businesses that rely on Sortiq Solutions for web development, design, and digital growth services.',
                         $clientLogos->count()
                     )
-                    : config('seo.descriptions.frontend.clients')
+                    : PageMeta::descriptionForRoute('frontend.clients')
             ),
         ]);
     }

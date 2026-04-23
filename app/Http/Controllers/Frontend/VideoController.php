@@ -31,7 +31,7 @@ class VideoController extends Controller
                         'Watch %d Sortiq Solutions videos on web development, digital marketing, design, and business-focused IT insights.',
                         $videos->count()
                     )
-                    : config('seo.descriptions.frontend.videos')
+                    : PageMeta::descriptionForRoute('frontend.videos')
             ),
         ]);
     }

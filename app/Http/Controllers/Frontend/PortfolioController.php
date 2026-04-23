@@ -54,7 +54,7 @@ class PortfolioController extends Controller
                         'Explore %d Sortiq Solutions portfolio projects in web design, development, e-commerce, and digital experiences built for growing businesses.',
                         $portfolios->count()
                     )
-                    : config('seo.descriptions.frontend.portfolio')
+                    : PageMeta::descriptionForRoute('frontend.portfolio')
             ),
             'portfolioItems' => $portfolioItems,
             'portfolioCategories' => $categories,

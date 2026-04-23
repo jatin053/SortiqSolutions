@@ -7,6 +7,7 @@ use App\Models\Review;
 use App\Support\Seo\PageMeta;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Throwable;
 
@@ -42,26 +43,38 @@ class ReviewController extends Controller
                         'Read %d client reviews and testimonials for Sortiq Solutions and see how our digital services support real business growth.',
                         $reviews->total()
                     )
-                    : config('seo.descriptions.frontend.reviews')
+                    : PageMeta::descriptionForRoute('frontend.reviews')
             ),
         ]);
     }
 
-    public function show(string $slug): View
+    public function show(string $slug): View|RedirectResponse
     {
-        $review = Review::query()->where('slug', $slug)->firstOrFail();
+        try {
+            $review = Review::query()->where('slug', $slug)->first();
+        } catch (Throwable $exception) {
+            report($exception);
 
-        abort_unless($review->status === 'published' || auth()->check(), 404);
+            return redirect()->route('frontend.reviews');
+        }
 
-        $review->increment('views');
-        $review->refresh();
+        abort_unless($review && ($review->status === 'published' || auth()->check()), 404);
 
-        $recentReviews = Review::query()
-            ->published()
-            ->whereKeyNot($review->getKey())
-            ->ordered()
-            ->limit(3)
-            ->get();
+        try {
+            $review->increment('views');
+            $review->refresh();
+
+            $recentReviews = Review::query()
+                ->published()
+                ->whereKeyNot($review->getKey())
+                ->ordered()
+                ->limit(3)
+                ->get();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            $recentReviews = collect();
+        }
 
         return view('frontend.reviews.show', [
             'review' => $review,
