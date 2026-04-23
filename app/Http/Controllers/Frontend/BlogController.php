@@ -9,8 +9,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Throwable;
 
 class BlogController extends Controller
 {
@@ -19,52 +22,72 @@ class BlogController extends Controller
         $searchTerm = trim((string) $request->query('search'));
         $activeCategory = trim((string) $request->query('category'));
 
-        $categoryQuery = Blog::query()
-            ->published()
-            ->whereNotNull('category')
-            ->where('category', '!=', '');
+        try {
+            $categoryQuery = Blog::query()
+                ->published()
+                ->whereNotNull('category')
+                ->where('category', '!=', '');
 
-        $categoryMap = (clone $categoryQuery)
-            ->pluck('category')
-            ->unique()
-            ->mapWithKeys(fn (string $category) => [Str::slug($category) => $category]);
+            $categoryMap = (clone $categoryQuery)
+                ->pluck('category')
+                ->unique()
+                ->mapWithKeys(fn (string $category) => [Str::slug($category) => $category]);
 
-        $blogsQuery = $this->publishedBlogsQuery();
+            $blogsQuery = $this->publishedBlogsQuery();
 
-        if ($searchTerm !== '') {
-            $blogsQuery->where(function ($query) use ($searchTerm) {
-                $query->where('title', 'like', "%{$searchTerm}%")
-                    ->orWhere('excerpt', 'like', "%{$searchTerm}%")
-                    ->orWhere('content', 'like', "%{$searchTerm}%");
-            });
+            if ($searchTerm !== '') {
+                $blogsQuery->where(function ($query) use ($searchTerm) {
+                    $query->where('title', 'like', "%{$searchTerm}%")
+                        ->orWhere('excerpt', 'like', "%{$searchTerm}%")
+                        ->orWhere('content', 'like', "%{$searchTerm}%");
+                });
+            }
+
+            if ($activeCategory !== '' && $categoryMap->has($activeCategory)) {
+                $blogsQuery->where('category', $categoryMap->get($activeCategory));
+            }
+
+            $categories = (clone $categoryQuery)
+                ->selectRaw('category, COUNT(*) as total')
+                ->groupBy('category')
+                ->orderBy('category')
+                ->get()
+                ->map(function ($item) {
+                    return (object) [
+                        'name' => $item->category,
+                        'slug' => Str::slug($item->category),
+                        'total' => $item->total,
+                    ];
+                });
+
+            $blogs = $blogsQuery->paginate(6)->withQueryString();
+            $recentBlogs = $this->publishedBlogsQuery()
+                ->limit(5)
+                ->get();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            $categories = collect();
+            $blogs = new LengthAwarePaginator(
+                collect(),
+                0,
+                6,
+                Paginator::resolveCurrentPage(),
+                [
+                    'path' => Paginator::resolveCurrentPath(),
+                    'pageName' => 'page',
+                ]
+            );
+            $recentBlogs = collect();
         }
-
-        if ($activeCategory !== '' && $categoryMap->has($activeCategory)) {
-            $blogsQuery->where('category', $categoryMap->get($activeCategory));
-        }
-
-        $categories = (clone $categoryQuery)
-            ->selectRaw('category, COUNT(*) as total')
-            ->groupBy('category')
-            ->orderBy('category')
-            ->get()
-            ->map(function ($item) {
-                return (object) [
-                    'name' => $item->category,
-                    'slug' => Str::slug($item->category),
-                    'total' => $item->total,
-                ];
-            });
 
         return view('frontend.blog.blog-list', [
-            'blogs' => $blogsQuery->paginate(6)->withQueryString(),
+            'blogs' => $blogs,
             'categories' => $categories,
             'pageMeta' => PageMeta::custom(
                 'Read the latest Sortiq Solutions blog posts on web design, development, digital marketing, and practical IT insights for growing businesses.'
             ),
-            'recentBlogs' => $this->publishedBlogsQuery()
-                ->limit(5)
-                ->get(),
+            'recentBlogs' => $recentBlogs,
             'searchTerm' => $searchTerm,
             'activeCategory' => $activeCategory,
         ]);
@@ -72,26 +95,32 @@ class BlogController extends Controller
 
     public function feed(): JsonResponse
     {
-        $blogs = $this->publishedBlogsQuery()
-            ->get()
-            ->map(function (Blog $blog) {
-                $category = $blog->category ?: 'General';
+        try {
+            $blogs = $this->publishedBlogsQuery()
+                ->get()
+                ->map(function (Blog $blog) {
+                    $category = $blog->category ?: 'General';
 
-                return [
-                    'title' => $blog->title,
-                    'slug' => $blog->slug,
-                    'image' => $blog->image_url,
-                    'excerpt' => $blog->excerpt ?: Str::limit(strip_tags($blog->content), 140),
-                    'date' => $blog->published_at?->toDateString(),
-                    'categories' => [
-                        [
-                            'name' => $category,
-                            'slug' => Str::slug($category),
+                    return [
+                        'title' => $blog->title,
+                        'slug' => $blog->slug,
+                        'image' => $blog->image_url,
+                        'excerpt' => $blog->excerpt ?: Str::limit(strip_tags($blog->content), 140),
+                        'date' => $blog->published_at?->toDateString(),
+                        'categories' => [
+                            [
+                                'name' => $category,
+                                'slug' => Str::slug($category),
+                            ],
                         ],
-                    ],
-                ];
-            })
-            ->values();
+                    ];
+                })
+                ->values();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            $blogs = collect();
+        }
 
         return response()->json($blogs);
     }

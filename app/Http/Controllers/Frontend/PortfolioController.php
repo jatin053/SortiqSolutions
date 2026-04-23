@@ -6,15 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Models\Portfolio;
 use App\Support\Seo\PageMeta;
 use Illuminate\View\View;
+use Throwable;
 
 class PortfolioController extends Controller
 {
     public function index(): View
     {
-        $portfolios = Portfolio::query()
-            ->published()
-            ->ordered()
-            ->get();
+        try {
+            $portfolios = Portfolio::query()
+                ->published()
+                ->ordered()
+                ->get();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            $portfolios = collect();
+        }
 
         $categories = $portfolios
             ->map(fn (Portfolio $portfolio) => [

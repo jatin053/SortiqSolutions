@@ -5,16 +5,34 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\Review;
 use App\Support\Seo\PageMeta;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\View\View;
+use Throwable;
 
 class ReviewController extends Controller
 {
     public function index(): View
     {
-        $reviews = Review::query()
-            ->published()
-            ->ordered()
-            ->paginate(9);
+        try {
+            $reviews = Review::query()
+                ->published()
+                ->ordered()
+                ->paginate(9);
+        } catch (Throwable $exception) {
+            report($exception);
+
+            $reviews = new LengthAwarePaginator(
+                collect(),
+                0,
+                9,
+                Paginator::resolveCurrentPage(),
+                [
+                    'path' => Paginator::resolveCurrentPath(),
+                    'pageName' => 'page',
+                ]
+            );
+        }
 
         return view('frontend.reviews.reviews-page', [
             'reviews' => $reviews,

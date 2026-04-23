@@ -6,15 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ReviewResource;
 use App\Models\Review;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Throwable;
 
 class ReviewController extends Controller
 {
     public function index(): AnonymousResourceCollection
     {
-        $reviews = Review::query()
-            ->where('status', 'published')
-            ->orderBy('published_at', 'desc')
-            ->get();
+        try {
+            $reviews = Review::query()
+                ->where('status', 'published')
+                ->orderBy('published_at', 'desc')
+                ->get();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            $reviews = collect();
+        }
 
         return ReviewResource::collection($reviews);
     }

@@ -6,15 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Models\ClientLogo;
 use App\Support\Seo\PageMeta;
 use Illuminate\View\View;
+use Throwable;
 
 class ClientController extends Controller
 {
     public function index(): View
     {
-        $clientLogos = ClientLogo::query()
-            ->published()
-            ->ordered()
-            ->get();
+        try {
+            $clientLogos = ClientLogo::query()
+                ->published()
+                ->ordered()
+                ->get();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            $clientLogos = collect();
+        }
 
         return view('frontend.clients.clients-page', [
             'clientLogos' => $clientLogos,
