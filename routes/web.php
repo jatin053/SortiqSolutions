@@ -51,8 +51,8 @@ $registerAdminResourceRoutes = function (string $prefix, string $name, string $c
         });
 };
 
-Route::redirect('/', '/sortiqsolution', 301);
-Route::get('/sortiqsolution', [FrontendHomeController::class, 'index'])->name('frontend.home');
+Route::get('/', [FrontendHomeController::class, 'index'])->name('frontend.home');
+Route::redirect('/sortiqsolution', '/', 301);
 
 $staticPageRoutes = $frontendRoutes['pages'];
 unset($staticPageRoutes['reviews'], $staticPageRoutes['clients'], $staticPageRoutes['videos'], $staticPageRoutes['portfolio']);
