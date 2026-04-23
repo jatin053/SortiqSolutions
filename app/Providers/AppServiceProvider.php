@@ -51,7 +51,7 @@ class AppServiceProvider extends ServiceProvider
                 report($exception);
 
                 $reviews = [];
-                $footerRecentBlogs = Blog::newCollection();
+                $footerRecentBlogs = collect();
             }
 
             $view->with([

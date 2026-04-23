@@ -27,8 +27,8 @@ class HomeController extends Controller
         } catch (Throwable $exception) {
             report($exception);
 
-            $homeClientLogos = ClientLogo::newCollection();
-            $homeVideos = Video::newCollection();
+            $homeClientLogos = collect();
+            $homeVideos = collect();
         }
 
         return view('frontend.home.home-page', [
