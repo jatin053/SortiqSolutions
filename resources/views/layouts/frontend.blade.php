@@ -9,7 +9,7 @@
         ? $pageMeta
         : \App\Support\Seo\PageMeta::forRoute($routeName);
     $sectionTitle = trim($__env->yieldContent('title'));
-    $routeTitle = trim((string) config("seo.titles.{$routeName}", ''));
+    $routeTitle = trim((string) \App\Support\Seo\PageMeta::titleForRoute($routeName));
     $pageTitle = trim($resolvedPageMeta->title ?: $routeTitle ?: $sectionTitle ?: config('seo.default_title', 'Sortiq Solutions Pvt. Ltd.'));
     $pageDescription = trim(
         $__env->yieldContent(
@@ -214,7 +214,6 @@
       @stack('scripts')
     </body>
   </html>
-
 
 
 

@@ -17,10 +17,22 @@ class PageMeta
     public static function forRoute(?string $routeName): self
     {
         return new self(
-            title: config("seo.titles.{$routeName}", config('seo.default_title')),
-            description: config("seo.descriptions.{$routeName}", config('seo.default_description')),
+            title: self::titleForRoute($routeName),
+            description: self::descriptionForRoute($routeName),
             image: asset(config('seo.default_image')),
         );
+    }
+
+    public static function titleForRoute(?string $routeName): ?string
+    {
+        return $routeName ? (config('seo.titles')[$routeName] ?? null) : null;
+    }
+
+    public static function descriptionForRoute(?string $routeName): string
+    {
+        return $routeName
+            ? (config('seo.descriptions')[$routeName] ?? config('seo.default_description'))
+            : config('seo.default_description');
     }
 
     public static function custom(string $description, ?string $image = null, string $type = 'website', ?string $title = null): self
