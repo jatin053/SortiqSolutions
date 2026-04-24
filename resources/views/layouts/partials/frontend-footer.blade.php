@@ -1,16 +1,16 @@
-<footer class="w-full bg-[#001a3d] text-white pt-12">
-  <div class="max-w-7xl mx-auto px-6 lg:px-12 xl:px-20">
-    <div class="flex flex-col lg:flex-row justify-between items-center gap-10 mb-12 border-b border-white/10 pb-10">
-      <div class="flex flex-wrap justify-center lg:justify-start items-center gap-5">
-        <img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/GF-min.png" alt="Badge" class="object-contain brightness-110 transition-transform duration-300 hover:scale-110 h-14">
-        <img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/digital-marketing-logo-min.png" alt="Badge" class="object-contain brightness-110 transition-transform duration-300 hover:scale-110 h-16">
-        <img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/upwork-logo-min.png" alt="Badge" class="object-contain brightness-110 transition-transform duration-300 hover:scale-110 h-14">
-        <img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/EN_legend_small.png" alt="Badge" class="object-contain brightness-110 transition-transform duration-300 hover:scale-110 h-14">
-        <img src="https://sortiqsolutions.com/wp-content/uploads/2025/06/iso-certified-company-image.webp" alt="Badge" class="object-contain brightness-110 transition-transform duration-300 hover:scale-110 h-14">
+<footer class="site-footer w-full bg-[#001a3d] text-white pt-12">
+  <div class="site-footer-inner max-w-7xl mx-auto px-6 lg:px-12 xl:px-20">
+    <div class="site-footer-top flex flex-col lg:flex-row justify-between items-center gap-10 mb-12 border-b border-white/10 pb-10">
+      <div class="site-footer-badges flex flex-wrap justify-center lg:justify-start items-center gap-5">
+        <img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/GF-min.png" alt="GoodFirms badge" class="site-footer-badge object-contain brightness-110 transition-transform duration-300 hover:scale-110">
+        <img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/digital-marketing-logo-min.png" alt="Google Analytics certification badge" class="site-footer-badge site-footer-badge--tall object-contain brightness-110 transition-transform duration-300 hover:scale-110">
+        <img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/upwork-logo-min.png" alt="Upwork badge" class="site-footer-badge object-contain brightness-110 transition-transform duration-300 hover:scale-110">
+        <img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/EN_legend_small.png" alt="Wix partner badge" class="site-footer-badge object-contain brightness-110 transition-transform duration-300 hover:scale-110">
+        <img src="https://sortiqsolutions.com/wp-content/uploads/2025/06/iso-certified-company-image.webp" alt="ISO certified badge" class="site-footer-badge object-contain brightness-110 transition-transform duration-300 hover:scale-110">
       </div>
 
-      <div class="flex flex-wrap justify-center lg:justify-end gap-10 text-[14px] text-gray-200">
-        <div class="flex items-start gap-3">
+      <div class="site-footer-contact flex flex-wrap justify-center lg:justify-end gap-10 text-[14px] text-gray-200">
+        <div class="site-footer-contact-block flex items-start gap-3">
           <iconify-icon icon="lucide:map-pin" width="22" height="22" class="text-white mt-1 shrink-0"></iconify-icon>
           <p>
             E-51, Second Floor, Phase - 8, Industrial Area,<br>
@@ -18,7 +18,7 @@
           </p>
         </div>
 
-        <div class="flex flex-col gap-2">
+        <div class="site-footer-contact-links flex flex-col gap-2">
           <a href="tel:+919646522110" class="flex items-center gap-3 hover:text-[#ff6600] transition-colors">
             <iconify-icon icon="lucide:phone" width="18" height="18"></iconify-icon> +91 9646522110
           </a>
@@ -29,9 +29,9 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-      <div>
-        <h4 class="text-xl font-bold mb-8">Our Company</h4>
+    <div class="site-footer-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+      <div class="site-footer-column">
+        <h4 class="site-footer-heading text-xl font-bold mb-8">Our Company</h4>
         <ul class="space-y-4">
           <li>
             <a href="/" class="group flex items-center gap-3 text-gray-300 hover:text-white transition-colors">
@@ -132,8 +132,8 @@
         </ul>
       </div>
 
-      <div>
-        <h4 class="text-xl font-bold mb-8">Our Services</h4>
+      <div class="site-footer-column">
+        <h4 class="site-footer-heading text-xl font-bold mb-8">Our Services</h4>
         <ul class="space-y-4">
           <li>
             <a href="/services/design" class="group flex items-center gap-3 text-gray-300 hover:text-white transition-colors">
@@ -250,8 +250,8 @@
         </ul>
       </div>
 
-      <div>
-        <h4 class="text-xl font-bold mb-8">Solutions</h4>
+      <div class="site-footer-column">
+        <h4 class="site-footer-heading text-xl font-bold mb-8">Solutions</h4>
         <ul class="space-y-4">
           <li>
             <a href="/services/php" class="group flex items-center gap-3 text-gray-300 hover:text-white transition-colors">
@@ -344,17 +344,17 @@
         </ul>
       </div>
 
-      <div>
-        <h4 class="text-xl font-bold mb-8">Recent Articles</h4>
+      <div class="site-footer-column site-footer-column--articles">
+        <h4 class="site-footer-heading text-xl font-bold mb-8">Recent Articles</h4>
         <div class="space-y-6">
           @forelse ($footerRecentBlogs as $recentBlog)
-            <div>
+            <div class="site-footer-article">
               <h5 class="leading-snug">
                 <a href="{{ route('frontend.blog.show', $recentBlog['slug']) }}" class="hover:text-[#ff6600] transition-colors">
                   {{ $recentBlog['title'] }}
                 </a>
               </h5>
-              <div class="flex items-center gap-2 text-cyan-400 text-xs mt-1">
+              <div class="site-footer-article-date flex items-center gap-2 text-cyan-400 text-xs mt-1">
                 <iconify-icon icon="lucide:calendar" width="13" height="13"></iconify-icon>
                 {{ $recentBlog->published_at?->format('F d, Y') ?? 'Unscheduled' }}
               </div>
@@ -364,7 +364,7 @@
           @endforelse
         </div>
 
-        <div class="border border-white/10 mt-8 p-6 text-center rounded-lg">
+        <div class="site-footer-verify-card border border-white/10 mt-8 p-6 text-center rounded-lg">
           <p class="mb-4 text-sm text-gray-300">Verify your certificate's authenticity now.</p>
           <a href="https://erp.sortiqsolutions.com/certificate-verify" target="_blank" rel="noopener noreferrer" class="inline-block bg-[#ff6600] px-6 py-2 rounded-full font-bold hover:bg-white hover:text-[#ff6600] transition-all">
             Verify Now
@@ -373,9 +373,9 @@
       </div>
     </div>
 
-    <div class="flex flex-col md:flex-row justify-between items-center py-6 border-t border-white/10 gap-4">
+    <div class="site-footer-bottom flex flex-col md:flex-row justify-between items-center py-6 border-t border-white/10 gap-4">
       <p class="text-sm text-gray-400">&copy; 2026 | Powered by Sortiq Solutions Pvt. Ltd.</p>
-      <div class="flex gap-4">
+      <div class="site-footer-socials flex gap-4">
         <a href="https://www.facebook.com/SortiqSolutions/" target="_blank" rel="noopener noreferrer" class="text-white hover:text-orange-500 hover:scale-125 transition-all duration-300" aria-label="Facebook">
           <iconify-icon icon="fa6-brands:facebook-f" width="14" height="14"></iconify-icon>
         </a>
