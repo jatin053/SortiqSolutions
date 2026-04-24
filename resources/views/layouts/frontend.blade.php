@@ -7,7 +7,18 @@
     $recaptchaEnabled = \App\Support\Recaptcha::enabledForRequest(request())
         && request()->routeIs('frontend.contact', 'frontend.internship');
     $usesDotLottie = request()->routeIs('frontend.home');
-    $viteManifestExists = is_file(public_path('build/manifest.json'));
+    $viteManifestPath = public_path('build/manifest.json');
+    $viteManifestEntryFile = null;
+
+    if (is_file($viteManifestPath)) {
+        $viteManifest = json_decode(file_get_contents($viteManifestPath), true);
+        $viteManifestEntryFile = data_get($viteManifest, 'resources/css/app.css.file');
+    }
+
+    $viteAssetsReady = is_string($viteManifestEntryFile)
+        && $viteManifestEntryFile !== ''
+        && is_file(public_path('build/' . ltrim($viteManifestEntryFile, '/')));
+    $localTailwindCssExists = is_file(public_path('frontend-assets/css/tailwind-fallback.css'));
     $resolvedPageMeta = ($pageMeta ?? null) instanceof \App\Support\Seo\PageMeta
         ? $pageMeta
         : \App\Support\Seo\PageMeta::forRoute($routeName);
@@ -48,8 +59,10 @@
         <link rel="dns-prefetch" href="//www.google.com">
         <link rel="dns-prefetch" href="//www.gstatic.com">
       @endif
-      @if ($viteManifestExists)
+      @if ($viteAssetsReady)
         @vite('resources/css/app.css')
+      @elseif ($localTailwindCssExists)
+        <link rel="stylesheet" href="{{ asset('frontend-assets/css/tailwind-fallback.css') }}">
       @else
         <script>
           window.tailwind = window.tailwind || {};
@@ -73,7 +86,7 @@
       @if ($inlineFrontendCss)
         <style>{!! $inlineFrontendCss !!}</style>
       @else
-        <link rel="stylesheet" href="/frontend-assets/css/main.css">
+        <link rel="stylesheet" href="{{ asset('frontend-assets/css/main.css') }}">
       @endif
       @if (! $recaptchaEnabled)
         <style>
@@ -269,7 +282,7 @@
     </div>
   </div>
 
-      <script src="/frontend-assets/js/main.js" defer></script>
+      <script src="{{ asset('frontend-assets/js/main.js') }}" defer></script>
       @stack('scripts')
     </body>
   </html>
