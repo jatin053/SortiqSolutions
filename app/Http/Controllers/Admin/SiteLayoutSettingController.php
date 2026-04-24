@@ -20,7 +20,7 @@ class SiteLayoutSettingController extends Controller
             $settings = array_replace_recursive($settings, $setting->data);
         }
 
-        return view('admin.site-layout.header-footer-settings', [
+        return view('admin.site-layout.site-layout-settings', [
             'settings' => $settings,
             'footerColumnKeys' => ['company', 'services', 'solutions'],
         ]);

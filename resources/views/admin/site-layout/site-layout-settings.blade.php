@@ -1,12 +1,12 @@
 ﻿@extends('admin.layouts.app')
 
-@section('title', 'Header & Footer')
+@section('title', 'Site Layout Settings')
 
 @section('content')
     @include('admin.partials.page-hero', [
         'kicker' => 'Site Settings',
-        'title' => 'Manage header and footer settings.',
-        'description' => 'Update logo, contact details, navigation links, and footer content.',
+        'title' => 'Manage site layout settings.',
+        'description' => 'Update the header, footer, logo, contact details, and navigation links.',
         'actions' => [
             [
                 'type' => 'button',

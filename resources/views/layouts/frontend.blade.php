@@ -170,7 +170,7 @@
       data-recaptcha-enabled="{{ $recaptchaEnabled ? 'true' : 'false' }}"
       @yield('body_attributes')
     >
-      @include('layouts.partials.frontend-header')
+      @include('layouts.partials.header')
   
       @yield('content')
       
@@ -213,7 +213,7 @@
   </div>
 
       
-      @include('layouts.partials.frontend-footer')
+      @include('layouts.partials.footer')
 
       
   <div id="fresher-modal-shell" class="modal-shell fixed inset-0 z-[10000]" hidden>
