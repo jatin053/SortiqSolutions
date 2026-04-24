@@ -43,9 +43,6 @@
     $pageImage = trim($__env->yieldContent('meta_image', $resolvedPageMeta->image));
     $pageType = trim($__env->yieldContent('meta_type', $resolvedPageMeta->type));
     $canonicalUrl = url()->current();
-    $inlineFrontendCss = is_file(public_path('frontend-assets/css/main.css'))
-        ? file_get_contents(public_path('frontend-assets/css/main.css'))
-        : null;
 @endphp
   <html lang="en">
     <head>
@@ -92,11 +89,7 @@
       @if ($recaptchaEnabled)
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
       @endif
-      @if ($inlineFrontendCss)
-        <style>{!! $inlineFrontendCss !!}</style>
-      @else
-        <link rel="stylesheet" href="{{ $versionedAsset('frontend-assets/css/main.css') }}">
-      @endif
+      <link rel="stylesheet" href="{{ $versionedAsset('frontend-assets/css/main.css') }}">
       @if (! $recaptchaEnabled)
         <style>
           .g-recaptcha {

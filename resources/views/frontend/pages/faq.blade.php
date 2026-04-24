@@ -25,17 +25,17 @@
             
               <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-md">
                 <button type="button" data-faq-button="faq-panel-0" aria-expanded="true" class="w-full flex items-center justify-between p-5 md:p-6 text-left transition-colors outline-none">
-                  <span class="font-bold pr-4 leading-snight md:text-lg text-[#ff6600]">What services does Sortiq Solutions provide?</span>
+                  <span class="font-bold pr-4 leading-snug md:text-lg text-[#ff6600]">What services does Sortiq Solutions provide?</span>
                   <iconify-icon icon="lucide:chevron-down" width="20" height="20" class="text-[#ff6600] rotate-180 transition-transform"></iconify-icon>
                 </button>
-                <div id="faq-panel-0" class="faq-panel px-5 md:px-6 pb-6 text-gray-600 text-sm md:text-base leading-relaxed border-t border-gray-50 animate-fadeIn" >
+                <div id="faq-panel-0" class="faq-panel px-5 md:px-6 pb-6 text-gray-600 text-sm md:text-base leading-relaxed border-t border-gray-50 animate-fadeIn">
                   <p class="mt-4">Sortiq Solutions specializes in a wide range of digital services including Web Development, App Development, Software Development, Graphic Designing, and Digital Marketing (SEO/SMO).</p>
                 </div>
               </div>
             
               <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-md">
                 <button type="button" data-faq-button="faq-panel-1" aria-expanded="false" class="w-full flex items-center justify-between p-5 md:p-6 text-left transition-colors outline-none">
-                  <span class="font-bold pr-4 leading-snight md:text-lg text-[#001a3d]">How can I apply for an internship?</span>
+                  <span class="font-bold pr-4 leading-snug md:text-lg text-[#001a3d]">How can I apply for an internship?</span>
                   <iconify-icon icon="lucide:chevron-down" width="20" height="20" class="text-gray-400 transition-transform"></iconify-icon>
                 </button>
                 <div id="faq-panel-1" class="faq-panel px-5 md:px-6 pb-6 text-gray-600 text-sm md:text-base leading-relaxed border-t border-gray-50 animate-fadeIn" hidden>
@@ -45,7 +45,7 @@
             
               <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-md">
                 <button type="button" data-faq-button="faq-panel-2" aria-expanded="false" class="w-full flex items-center justify-between p-5 md:p-6 text-left transition-colors outline-none">
-                  <span class="font-bold pr-4 leading-snight md:text-lg text-[#001a3d]">Where is your office located?</span>
+                  <span class="font-bold pr-4 leading-snug md:text-lg text-[#001a3d]">Where is your office located?</span>
                   <iconify-icon icon="lucide:chevron-down" width="20" height="20" class="text-gray-400 transition-transform"></iconify-icon>
                 </button>
                 <div id="faq-panel-2" class="faq-panel px-5 md:px-6 pb-6 text-gray-600 text-sm md:text-base leading-relaxed border-t border-gray-50 animate-fadeIn" hidden>
@@ -55,7 +55,7 @@
             
               <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-md">
                 <button type="button" data-faq-button="faq-panel-3" aria-expanded="false" class="w-full flex items-center justify-between p-5 md:p-6 text-left transition-colors outline-none">
-                  <span class="font-bold pr-4 leading-snight md:text-lg text-[#001a3d]">How do I get a project quote?</span>
+                  <span class="font-bold pr-4 leading-snug md:text-lg text-[#001a3d]">How do I get a project quote?</span>
                   <iconify-icon icon="lucide:chevron-down" width="20" height="20" class="text-gray-400 transition-transform"></iconify-icon>
                 </button>
                 <div id="faq-panel-3" class="faq-panel px-5 md:px-6 pb-6 text-gray-600 text-sm md:text-base leading-relaxed border-t border-gray-50 animate-fadeIn" hidden>

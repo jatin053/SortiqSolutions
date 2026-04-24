@@ -1,7 +1,7 @@
-const runtimeDataset = document.body?.dataset ?? {};
-const CONTACT_API_URL = runtimeDataset.contactApiUrl || "/api/contact-messages";
-const WHATSAPP_NUMBER = String(runtimeDataset.whatsappNumber || "919646522110").replace(/\D+/g, "");
-const RECAPTCHA_ENABLED = runtimeDataset.recaptchaEnabled !== "false";
+const bodyData = document.body?.dataset ?? {};
+const CONTACT_API_URL = bodyData.contactApiUrl || "/api/contact-messages";
+const WHATSAPP_NUMBER = String(bodyData.whatsappNumber || "919646522110").replace(/\D+/g, "");
+const RECAPTCHA_ENABLED = bodyData.recaptchaEnabled !== "false";
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -19,74 +19,54 @@ const parseJsonScript = (id) => {
 
   try {
     return JSON.parse(node.textContent);
-  } catch (error) {
+  } catch {
     return null;
   }
 };
 
-const runWhenIdle = (callback) => {
-  if ("requestIdleCallback" in window) {
-    window.requestIdleCallback(callback, { timeout: 1500 });
-    return;
-  }
-
-  window.setTimeout(callback, 250);
-};
-
 const normalizeWebsiteUrl = (value = "") => {
-  const url = String(value || "").trim();
-
+  const url = String(value).trim();
   if (!url) return "";
-  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("//")) return url;
-
+  if (/^(https?:)?\/\//.test(url)) return url;
   return url.startsWith("/") ? url : `/${url}`;
 };
 
 const isEmbeddablePortfolioUrl = (value = "") => {
   const normalized = normalizeWebsiteUrl(value);
-
   if (!normalized) return false;
 
   try {
-    const target = new URL(normalized, window.location.origin);
-
-    return target.origin === window.location.origin;
-  } catch (error) {
+    return new URL(normalized, window.location.origin).origin === window.location.origin;
+  } catch {
     return false;
   }
 };
 
-const renderPortfolioText = (value = "") => {
-  const text = String(value || "").trim();
-
-  if (!text) return "";
-
-  return text
+const renderPortfolioText = (value = "") =>
+  String(value)
+    .trim()
     .split(/\r\n|\r|\n/)
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => `<p class="text-slate-600 leading-7">${escapeHtml(line)}</p>`)
     .join("");
-};
 
-const openModal = (shell) => {
+const setModalState = (shell, open) => {
   if (!shell) return;
-  shell.hidden = false;
-  shell.classList.add("is-open");
-  document.body.classList.add("overflow-hidden");
-  const panel = $(".modal-panel", shell);
-  if (panel) panel.classList.add("is-open");
-  const overlay = $(".modal-overlay", shell);
-  if (overlay) overlay.classList.add("is-open");
-};
 
-const closeModal = (shell) => {
-  if (!shell) return;
-  shell.classList.remove("is-open");
   const panel = $(".modal-panel", shell);
-  if (panel) panel.classList.remove("is-open");
   const overlay = $(".modal-overlay", shell);
-  if (overlay) overlay.classList.remove("is-open");
+
+  if (open) {
+    shell.hidden = false;
+    document.body.classList.add("overflow-hidden");
+  }
+
+  shell.classList.toggle("is-open", open);
+  panel?.classList.toggle("is-open", open);
+  overlay?.classList.toggle("is-open", open);
+
+  if (open) return;
 
   window.setTimeout(() => {
     if (!shell.classList.contains("is-open")) {
@@ -99,40 +79,30 @@ const closeModal = (shell) => {
 const initHeader = () => {
   const drawer = $("#mobile-drawer");
   const overlay = $("#mobile-overlay");
-  const openButton = $("[data-mobile-open]");
-  const closeButton = $("[data-mobile-close]");
+  if (!drawer || !overlay) return;
 
-  const openDrawer = () => {
-    if (!drawer || !overlay) return;
-    drawer.classList.add("is-open");
-    overlay.classList.add("is-open");
-    document.body.classList.add("overflow-hidden");
+  const setDrawerState = (open) => {
+    drawer.classList.toggle("is-open", open);
+    overlay.classList.toggle("is-open", open);
+    document.body.classList.toggle("overflow-hidden", open);
   };
 
-  const closeDrawer = () => {
-    if (!drawer || !overlay) return;
-    drawer.classList.remove("is-open");
-    overlay.classList.remove("is-open");
-    document.body.classList.remove("overflow-hidden");
-  };
-
-  openButton?.addEventListener("click", openDrawer);
-  closeButton?.addEventListener("click", closeDrawer);
-  overlay?.addEventListener("click", closeDrawer);
+  $("[data-mobile-open]")?.addEventListener("click", () => setDrawerState(true));
+  $("[data-mobile-close]")?.addEventListener("click", () => setDrawerState(false));
+  overlay.addEventListener("click", () => setDrawerState(false));
 
   $$("[data-mobile-accordion]").forEach((button) => {
     button.addEventListener("click", () => {
-      const target = button.getAttribute("data-mobile-accordion");
-      const panel = document.getElementById(target);
-      if (!panel) return;
+      const target = document.getElementById(button.getAttribute("data-mobile-accordion") || "");
+      if (!target) return;
 
       const isOpen = button.getAttribute("aria-expanded") === "true";
       $$("[data-mobile-accordion]").forEach((item) => item.setAttribute("aria-expanded", "false"));
-      $$("[data-mobile-accordion-panel]").forEach((item) => item.classList.add("hidden"));
+      $$("[data-mobile-accordion-panel]").forEach((panel) => panel.classList.add("hidden"));
 
       if (!isOpen) {
         button.setAttribute("aria-expanded", "true");
-        panel.classList.remove("hidden");
+        target.classList.remove("hidden");
       }
     });
   });
@@ -145,21 +115,16 @@ const initChatbot = () => {
   const send = $("#chatbot-send");
   const input = $("#chatbot-input");
   const whatsapp = $("#chatbot-whatsapp");
+  if (!panel || !toggle || !whatsapp) return;
 
-  const syncState = (open) => {
-    if (!panel || !toggle || !whatsapp) return;
+  const setChatState = (open) => {
     panel.classList.toggle("is-open", open);
     whatsapp.classList.toggle("hidden", open);
     toggle.setAttribute("aria-expanded", String(open));
   };
 
-  toggle?.addEventListener("click", () => {
-    const isOpen = toggle.getAttribute("aria-expanded") === "true";
-    syncState(!isOpen);
-  });
-
-  close?.addEventListener("click", () => syncState(false));
-
+  toggle.addEventListener("click", () => setChatState(toggle.getAttribute("aria-expanded") !== "true"));
+  close?.addEventListener("click", () => setChatState(false));
   send?.addEventListener("click", () => {
     const message = encodeURIComponent((input?.value || "Hello!").trim() || "Hello!");
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, "_blank", "noopener,noreferrer");
@@ -171,28 +136,159 @@ const initFresherModal = () => {
   if (!shell) return;
 
   $$("[data-open-fresher]").forEach((button) => {
-    button.addEventListener("click", () => openModal(shell));
+    button.addEventListener("click", () => setModalState(shell, true));
   });
-
   $$("[data-close-fresher]").forEach((button) => {
-    button.addEventListener("click", () => closeModal(shell));
+    button.addEventListener("click", () => setModalState(shell, false));
   });
-
-  $(".modal-overlay", shell)?.addEventListener("click", () => closeModal(shell));
+  $(".modal-overlay", shell)?.addEventListener("click", () => setModalState(shell, false));
 
   const fileInput = $("#fresher-file");
   const fileName = $("#fresher-file-name");
   fileInput?.addEventListener("change", () => {
-    fileName.textContent = fileInput.files?.[0]?.name || "No file chosen";
+    if (fileName) fileName.textContent = fileInput.files?.[0]?.name || "No file chosen";
+  });
+};
+
+const getRecaptchaToken = (form) =>
+  !RECAPTCHA_ENABLED ? "recaptcha-disabled" : form.querySelector('textarea[name="g-recaptcha-response"]')?.value || "";
+
+const initRecaptchaFallback = () => {
+  if (RECAPTCHA_ENABLED) return;
+
+  $$(".g-recaptcha").forEach((node) => {
+    if (node.childElementCount > 0 || node.textContent.trim()) return;
+    node.innerHTML = '<span style="font-weight:700;color:#4b5563;letter-spacing:0.02em;">reCAPTCHA</span>';
+  });
+};
+
+const initPhoneInputs = () => {
+  $$('input[name="phone"]').forEach((input) => {
+    const sanitize = () => {
+      input.value = input.value.replace(/\D+/g, "");
+    };
+
+    input.setAttribute("inputmode", "numeric");
+    input.setAttribute("autocomplete", "tel-national");
+    input.setAttribute("pattern", "[0-9]*");
+    input.addEventListener("input", sanitize);
+    input.addEventListener("paste", () => window.setTimeout(sanitize, 0));
+  });
+};
+
+const setButtonLoading = (form, loading, text) => {
+  const button = $('button[type="submit"]', form);
+  if (!button) return;
+
+  button.dataset.originalText ||= button.textContent.trim();
+  button.disabled = loading;
+  button.textContent = loading ? text : button.dataset.originalText;
+};
+
+const serializeContactForm = (form) => {
+  const data = new FormData();
+  const phone = form.elements.phone?.value || "";
+
+  ["name", "email", "subject", "message", "country_code"].forEach((field) => {
+    data.append(field, form.elements[field]?.value || "");
+  });
+  if (phone) data.append("phone", phone);
+  data.append("recaptcha", getRecaptchaToken(form));
+
+  return data;
+};
+
+const initForms = () => {
+  $$("form").forEach((form) => {
+    form.addEventListener("submit", async (event) => {
+      const route = document.body?.dataset.route || "";
+      const isFresher = Boolean(form.closest("#fresher-modal-shell"));
+      const isInternship = !isFresher && route === "/internship";
+      const isContact =
+        !isFresher &&
+        !isInternship &&
+        ["name", "email", "subject", "message"].every((field) => form.elements[field]);
+
+      if (!isFresher && !isInternship && !isContact) return;
+      event.preventDefault();
+
+      if (isFresher) {
+        setButtonLoading(form, true, "Processing...");
+        window.setTimeout(() => {
+          alert("Application sent successfully!");
+          form.reset();
+          const nameNode = $("#fresher-file-name");
+          if (nameNode) nameNode.textContent = "No file chosen";
+          setButtonLoading(form, false, "Processing...");
+          setModalState($("#fresher-modal-shell"), false);
+        }, 1200);
+        return;
+      }
+
+      if (!getRecaptchaToken(form)) {
+        alert(isInternship ? "Please complete the ReCAPTCHA" : "Please verify the captcha");
+        return;
+      }
+
+      if (isInternship) {
+        setButtonLoading(form, true, "Sending...");
+        window.setTimeout(() => {
+          alert("Internship request submitted successfully!");
+          form.reset();
+          setButtonLoading(form, false, "Sending...");
+        }, 1200);
+        return;
+      }
+
+      setButtonLoading(form, true, "sending...");
+
+      try {
+        const response = await fetch(CONTACT_API_URL, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: serializeContactForm(form),
+        });
+        const raw = await response.text();
+        let result = {};
+
+        try {
+          result = raw ? JSON.parse(raw) : {};
+        } catch {
+          throw new Error("The contact form returned an invalid response. Please try again.");
+        }
+
+        if (!response.ok) {
+          const firstError = result.errors ? Object.values(result.errors).flat()[0] : null;
+          throw new Error(firstError || result.message || "Unable to send message");
+        }
+
+        alert(result.message || "message sent!");
+        form.reset();
+
+        try {
+          window.grecaptcha?.reset();
+        } catch {
+          // Ignore routes without an active widget.
+        }
+      } catch (error) {
+        alert(error.message || "error sending message");
+      } finally {
+        setButtonLoading(form, false, "sending...");
+      }
+    });
   });
 };
 
 const initVideoCards = () => {
   $$("[data-video-url]").forEach((card) => {
     card.addEventListener("click", () => {
-      if (card.dataset.loaded === "true") return;
-      card.dataset.loaded = "true";
       const url = card.getAttribute("data-video-url");
+      if (!url || card.dataset.loaded === "true") return;
+
+      card.dataset.loaded = "true";
       card.innerHTML = `
         <iframe
           src="${escapeHtml(`${url}?autoplay=1&rel=0&modestbranding=1`)}"
@@ -209,38 +305,40 @@ const initVideoCards = () => {
 
 const initHeroSlider = () => {
   const data = parseJsonScript("hero-slides-data");
-  if (!data || !Array.isArray(data.slides) || data.slides.length === 0) return;
+  if (!data?.slides?.length) return;
 
-  const titleNode = $("#hero-slide-title");
-  const descNode = $("#hero-slide-desc");
+  const title = $("#hero-slide-title");
+  const desc = $("#hero-slide-desc");
   const player = $("#hero-slide-player");
-  const prev = $("#hero-prev");
-  const next = $("#hero-next");
   let index = 0;
 
   const render = () => {
     const slide = data.slides[index];
     if (!slide) return;
-    if (titleNode) titleNode.textContent = slide.title;
-    if (descNode) descNode.textContent = slide.desc;
+    if (title) title.textContent = slide.title;
+    if (desc) desc.textContent = slide.desc;
     if (player) player.setAttribute("src", slide.animation);
   };
 
-  const advance = (direction = 1) => {
-    index = (index + direction + data.slides.length) % data.slides.length;
+  $("#hero-prev")?.addEventListener("click", () => {
+    index = (index - 1 + data.slides.length) % data.slides.length;
     render();
-  };
-
-  prev?.addEventListener("click", () => advance(-1));
-  next?.addEventListener("click", () => advance(1));
+  });
+  $("#hero-next")?.addEventListener("click", () => {
+    index = (index + 1) % data.slides.length;
+    render();
+  });
 
   render();
-  window.setInterval(() => advance(1), 6000);
+  window.setInterval(() => {
+    index = (index + 1) % data.slides.length;
+    render();
+  }, 6000);
 };
 
 const initCertificationsSlider = () => {
   const slider = $("[data-certifications-slider]");
-  const track = slider ? $("[data-certifications-track]", slider) : null;
+  const track = slider && $("[data-certifications-track]", slider);
   if (!slider || !track || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
   const cards = Array.from(track.children).filter((node) => node instanceof HTMLElement);
@@ -248,78 +346,58 @@ const initCertificationsSlider = () => {
 
   let offset = 0;
   let resetPoint = 0;
-  let lastTimestamp = 0;
-  let isHovered = false;
-  let isInView = true;
+  let lastTime = 0;
+  let paused = false;
+  let inView = true;
 
-  const getSpeed = () => {
-    if (window.innerWidth >= 1024) return 72;
-    if (window.innerWidth >= 640) return 58;
-    return 44;
+  const speed = () => (window.innerWidth >= 1024 ? 72 : window.innerWidth >= 640 ? 58 : 44);
+  const paint = () => {
+    track.style.transform = `translate3d(-${offset}px,0,0)`;
   };
-
-  const updateTransform = () => {
-    track.style.transform = `translate3d(-${offset}px, 0, 0)`;
-  };
-
   const measure = () => {
     const midpoint = cards[Math.floor(cards.length / 2)];
-    const firstCard = cards[0];
-    if (!midpoint || !firstCard) return;
-
-    resetPoint = midpoint.offsetLeft - firstCard.offsetLeft;
-    if (resetPoint <= 0) {
-      track.style.transform = "";
-      return;
-    }
-
+    resetPoint = midpoint ? midpoint.offsetLeft - cards[0].offsetLeft : 0;
+    if (resetPoint <= 0) return (track.style.transform = "");
     offset %= resetPoint;
-    updateTransform();
+    paint();
   };
-
   const resetClock = () => {
-    lastTimestamp = 0;
+    lastTime = 0;
   };
+  const tick = (time) => {
+    if (!lastTime) lastTime = time;
+    const delta = (time - lastTime) / 1000;
+    lastTime = time;
 
-  const setHoverState = (value) => {
-    isHovered = value;
-    if (!value) resetClock();
-  };
-
-  const tick = (timestamp) => {
-    if (!lastTimestamp) lastTimestamp = timestamp;
-    const deltaSeconds = (timestamp - lastTimestamp) / 1000;
-    lastTimestamp = timestamp;
-
-    if (!isHovered && isInView && document.visibilityState === "visible" && resetPoint > 0) {
-      offset += getSpeed() * deltaSeconds;
+    if (!paused && inView && document.visibilityState === "visible" && resetPoint > 0) {
+      offset += speed() * delta;
       if (offset >= resetPoint) offset -= resetPoint;
-      updateTransform();
+      paint();
     }
 
     window.requestAnimationFrame(tick);
   };
 
-  slider.addEventListener("mouseenter", () => setHoverState(true));
-  slider.addEventListener("mouseleave", () => setHoverState(false));
-  slider.addEventListener("focusin", () => setHoverState(true));
-  slider.addEventListener("focusout", () => setHoverState(false));
+  ["mouseenter", "focusin"].forEach((event) => slider.addEventListener(event, () => (paused = true)));
+  ["mouseleave", "focusout"].forEach((event) =>
+    slider.addEventListener(event, () => {
+      paused = false;
+      resetClock();
+    })
+  );
 
   document.addEventListener("visibilitychange", resetClock);
   window.addEventListener("resize", measure, { passive: true });
   window.addEventListener("load", measure, { once: true });
-
-  if ("ResizeObserver" in window) {
-    const resizeObserver = new ResizeObserver(measure);
-    resizeObserver.observe(slider);
-  }
-
+  if ("ResizeObserver" in window) new ResizeObserver(measure).observe(slider);
   if ("IntersectionObserver" in window) {
-    const observer = new IntersectionObserver((entries) => {
-      isInView = entries[0]?.isIntersecting ?? true;
-      if (isInView) resetClock();
-    }, { threshold: 0.15 });
-    observer.observe(slider);
+    new IntersectionObserver(
+      ([entry]) => {
+        inView = entry?.isIntersecting ?? true;
+        if (inView) resetClock();
+      },
+      { threshold: 0.15 }
+    ).observe(slider);
   }
 
   measure();
@@ -327,115 +405,104 @@ const initCertificationsSlider = () => {
 };
 
 const initStatsCounters = () => {
-  $$("[data-count-end]").forEach((node) => {
+  const counters = $$("[data-count-end]");
+  if (!counters.length) return;
+
+  const revealCounter = (node) => {
     const end = Number(node.getAttribute("data-count-end") || "0");
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        observer.disconnect();
-        const duration = 2000;
-        const start = performance.now();
-        const animate = (timestamp) => {
-          const progress = Math.min((timestamp - start) / duration, 1);
-          node.textContent = `${Math.floor(progress * end)}+`;
-          if (progress < 1) {
-            requestAnimationFrame(animate);
-          } else {
-            node.textContent = `${end}+`;
-          }
-        };
-        requestAnimationFrame(animate);
-      });
+    const start = performance.now();
+
+    const step = (time) => {
+      const progress = Math.min((time - start) / 2000, 1);
+      node.textContent = `${Math.floor(progress * end)}+`;
+      if (progress < 1) return window.requestAnimationFrame(step);
+      node.textContent = `${end}+`;
+    };
+
+    window.requestAnimationFrame(step);
+  };
+
+  if (!("IntersectionObserver" in window)) {
+    counters.forEach(revealCounter);
+    return;
+  }
+
+  counters.forEach((node) => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      observer.disconnect();
+      revealCounter(node);
     }, { threshold: 0.4 });
+
     observer.observe(node);
   });
 };
 
 const initTestimonials = () => {
-  const sections = $$("[data-testimonials-section]");
-  if (!sections.length) return;
-
-  sections.forEach((section) => {
+  $$("[data-testimonials-section]").forEach((section) => {
     const panels = $$("[data-testimonial-panel]", section);
     const triggers = $$("[data-testimonial-trigger]", section);
     if (!panels.length || !triggers.length) return;
 
-    let activeIndex = 0;
-
+    let active = 0;
     const render = () => {
       panels.forEach((panel, index) => {
-        panel.hidden = index !== activeIndex;
+        panel.hidden = index !== active;
       });
 
       triggers.forEach((trigger, index) => {
-        const active = index === activeIndex;
-        trigger.setAttribute("aria-pressed", String(active));
-        trigger.classList.toggle("opacity-40", !active);
-
-        const avatar = $("[data-testimonial-avatar]", trigger);
-        const initials = $("[data-testimonial-initials]", trigger);
-        const name = $("[data-testimonial-name]", trigger);
-        const badge = $("[data-testimonial-badge]", trigger);
-        const verified = $("[data-testimonial-verified]", trigger);
-
-        if (avatar) {
-          avatar.classList.toggle("bg-[#002d5b]", active);
-          avatar.classList.toggle("ring-[6px]", active);
-          avatar.classList.toggle("ring-[#ff6a00]", active);
-          avatar.classList.toggle("bg-slate-300", !active);
-        }
-
-        if (initials) {
-          initials.classList.toggle("text-white", active);
-          initials.classList.toggle("text-xl", active);
-          initials.classList.toggle("md:text-2xl", active);
-          initials.classList.toggle("text-gray-100", !active);
-          initials.classList.toggle("text-base", !active);
-          initials.classList.toggle("md:text-lg", !active);
-        }
-
-        if (name) {
-          name.classList.toggle("text-[#002d5b]", active);
-          name.classList.toggle("text-[#94a3b8]", !active);
-        }
-
-        badge?.classList.toggle("hidden", !active);
-        verified?.classList.toggle("hidden", !active);
+        const isActive = index === active;
+        trigger.setAttribute("aria-pressed", String(isActive));
+        trigger.classList.toggle("opacity-40", !isActive);
+        $("[data-testimonial-avatar]", trigger)?.classList.toggle("bg-[#002d5b]", isActive);
+        $("[data-testimonial-avatar]", trigger)?.classList.toggle("ring-[6px]", isActive);
+        $("[data-testimonial-avatar]", trigger)?.classList.toggle("ring-[#ff6a00]", isActive);
+        $("[data-testimonial-avatar]", trigger)?.classList.toggle("bg-slate-300", !isActive);
+        $("[data-testimonial-initials]", trigger)?.classList.toggle("text-white", isActive);
+        $("[data-testimonial-initials]", trigger)?.classList.toggle("text-xl", isActive);
+        $("[data-testimonial-initials]", trigger)?.classList.toggle("md:text-2xl", isActive);
+        $("[data-testimonial-initials]", trigger)?.classList.toggle("text-gray-100", !isActive);
+        $("[data-testimonial-initials]", trigger)?.classList.toggle("text-base", !isActive);
+        $("[data-testimonial-initials]", trigger)?.classList.toggle("md:text-lg", !isActive);
+        $("[data-testimonial-name]", trigger)?.classList.toggle("text-[#002d5b]", isActive);
+        $("[data-testimonial-name]", trigger)?.classList.toggle("text-[#94a3b8]", !isActive);
+        $("[data-testimonial-badge]", trigger)?.classList.toggle("hidden", !isActive);
+        $("[data-testimonial-verified]", trigger)?.classList.toggle("hidden", !isActive);
       });
     };
 
     triggers.forEach((button) => {
       button.addEventListener("click", () => {
-        activeIndex = Number(button.getAttribute("data-testimonial-index") || "0");
+        active = Number(button.getAttribute("data-testimonial-index") || "0");
         render();
       });
     });
 
     render();
     window.setInterval(() => {
-      activeIndex = (activeIndex + 1) % panels.length;
+      active = (active + 1) % panels.length;
       render();
     }, 7000);
   });
 };
+
 const initPortfoliosPage = () => {
   const modal = $("#portfolio-modal");
-  const modalContent = $("#portfolio-modal-content");
-  const closeButton = $("#portfolio-modal-close");
-  if (!modal || !modalContent) return;
+  const contentNode = $("#portfolio-modal-content");
+  if (!modal || !contentNode) return;
 
   $$("[data-portfolio-item]").forEach((button) => {
     button.addEventListener("click", () => {
-      const projectUrl = normalizeWebsiteUrl(button.getAttribute("data-portfolio-url") || "");
-      const canEmbedProject = isEmbeddablePortfolioUrl(projectUrl);
-      const summary = String(button.getAttribute("data-portfolio-summary") || "").trim();
-      const content = String(button.getAttribute("data-portfolio-content") || "").trim();
-      const imageUrl = String(button.getAttribute("data-portfolio-image") || "").trim();
-      const title = String(button.getAttribute("data-portfolio-title") || "").trim() || "Portfolio Project";
-      const category = String(button.getAttribute("data-portfolio-category") || "").trim() || "Portfolio";
+      const projectUrl = normalizeWebsiteUrl(button.getAttribute("data-portfolio-url"));
+      const title = button.getAttribute("data-portfolio-title")?.trim() || "Portfolio Project";
+      const category = button.getAttribute("data-portfolio-category")?.trim() || "Portfolio";
+      const imageUrl = button.getAttribute("data-portfolio-image")?.trim() || "";
+      const summary = button.getAttribute("data-portfolio-summary")?.trim() || "";
+      const content = button.getAttribute("data-portfolio-content")?.trim() || "";
+      const canEmbed = isEmbeddablePortfolioUrl(projectUrl);
 
       modal.hidden = false;
-      modalContent.innerHTML = `
+      contentNode.innerHTML = `
         <div class="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
           <div class="bg-slate-950">
             ${
@@ -447,69 +514,59 @@ const initPortfoliosPage = () => {
           <div class="p-6 md:p-8">
             <div class="inline-flex items-center rounded-full bg-orange-50 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-[#ff6600]">${escapeHtml(category)}</div>
             <h2 class="mt-4 text-2xl md:text-3xl font-black text-[#001a3d]">${escapeHtml(title)}</h2>
-            ${
-              summary
-                ? `<p class="mt-4 text-[15px] leading-7 text-slate-700">${escapeHtml(summary)}</p>`
-                : ""
-            }
-            ${
-              content
-                ? `<div class="mt-6 space-y-4">${renderPortfolioText(content)}</div>`
-                : ""
-            }
+            ${summary ? `<p class="mt-4 text-[15px] leading-7 text-slate-700">${escapeHtml(summary)}</p>` : ""}
+            ${content ? `<div class="mt-6 space-y-4">${renderPortfolioText(content)}</div>` : ""}
             ${
               projectUrl
-                ? `
-                  <div class="mt-8 flex flex-wrap gap-3">
+                ? `<div class="mt-8 flex flex-wrap gap-3">
                     <a href="${escapeHtml(projectUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-full bg-[#001a3d] px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-white transition-colors hover:bg-[#ff6600]">
                       Open Project
                       <span aria-hidden="true">&rarr;</span>
                     </a>
-                  </div>
-                `
+                  </div>`
                 : ""
             }
           </div>
         </div>
         ${
-          canEmbedProject
-            ? `
-              <div class="border-t border-slate-200 bg-slate-50 p-4 md:p-6">
-                <div class="mb-3 flex items-center justify-between gap-4">
-                  <div>
-                    <h3 class="text-lg font-black text-[#001a3d]">Live Preview</h3>
-                    <p class="text-sm text-slate-500">If the preview does not load, open the project in a new tab.</p>
-                  </div>
-                </div>
-                <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                  <iframe src="${escapeHtml(projectUrl)}" title="${escapeHtml(title || "Portfolio project preview")}" class="h-[70vh] w-full bg-white" loading="lazy"></iframe>
-                </div>
-              </div>
-            `
+          canEmbed
+            ? `<div class="border-t border-slate-200 bg-slate-50 p-4 md:p-6">
+                 <div class="mb-3">
+                   <h3 class="text-lg font-black text-[#001a3d]">Live Preview</h3>
+                   <p class="text-sm text-slate-500">If the preview does not load, open the project in a new tab.</p>
+                 </div>
+                 <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                   <iframe src="${escapeHtml(projectUrl)}" title="${escapeHtml(title)}" class="h-[70vh] w-full bg-white" loading="lazy"></iframe>
+                 </div>
+               </div>`
             : ""
         }
       `;
     });
   });
 
-  closeButton?.addEventListener("click", () => {
+  $("#portfolio-modal-close")?.addEventListener("click", () => {
     modal.hidden = true;
   });
-  modal?.addEventListener("click", (event) => {
+  modal.addEventListener("click", (event) => {
     if (event.target === modal) modal.hidden = true;
   });
 };
 
 const initFaqPage = () => {
-  $$("[data-faq-button]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const panelId = button.getAttribute("data-faq-button");
-      const panel = document.getElementById(panelId);
-      if (!panel) return;
-      const expanded = button.getAttribute("aria-expanded") === "true";
+  const buttons = $$("[data-faq-button]");
+  if (!buttons.length) return;
 
-      $$("[data-faq-button]").forEach((item) => item.setAttribute("aria-expanded", "false"));
-      $$(".faq-panel").forEach((item) => item.hidden = true);
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const panel = document.getElementById(button.getAttribute("data-faq-button") || "");
+      if (!panel) return;
+
+      const expanded = button.getAttribute("aria-expanded") === "true";
+      buttons.forEach((item) => item.setAttribute("aria-expanded", "false"));
+      $$(".faq-panel").forEach((item) => {
+        item.hidden = true;
+      });
       $$("[data-faq-button] iconify-icon").forEach((icon) => {
         icon.classList.remove("rotate-180", "text-[#ff6600]");
         icon.classList.add("text-gray-400");
@@ -518,183 +575,25 @@ const initFaqPage = () => {
       if (!expanded) {
         button.setAttribute("aria-expanded", "true");
         panel.hidden = false;
-        const icon = $("iconify-icon", button);
-        if (icon) {
-          icon.classList.add("rotate-180", "text-[#ff6600]");
-          icon.classList.remove("text-gray-400");
-        }
+        $("iconify-icon", button)?.classList.add("rotate-180", "text-[#ff6600]");
+        $("iconify-icon", button)?.classList.remove("text-gray-400");
       }
     });
   });
-};
-
-const getRecaptchaToken = (form) => {
-  if (!RECAPTCHA_ENABLED) return "recaptcha-disabled";
-  const node = form.querySelector('textarea[name="g-recaptcha-response"]');
-  return node?.value || "";
-};
-
-const initRecaptchaFallback = () => {
-  if (RECAPTCHA_ENABLED) return;
-
-  $$(".g-recaptcha").forEach((node) => {
-    if (node.childElementCount > 0 || node.textContent.trim() !== "") return;
-    node.innerHTML = '<span style="font-weight:700;color:#4b5563;letter-spacing:0.02em;">reCAPTCHA</span>';
-  });
-};
-
-const initPhoneInputs = () => {
-  $$('input[name="phone"]').forEach((input) => {
-    input.setAttribute("inputmode", "numeric");
-    input.setAttribute("autocomplete", "tel-national");
-    input.setAttribute("pattern", "[0-9]*");
-
-    const sanitize = () => {
-      input.value = input.value.replace(/\D+/g, "");
-    };
-
-    input.addEventListener("input", sanitize);
-    input.addEventListener("paste", () => {
-      window.setTimeout(sanitize, 0);
-    });
-  });
-};
-
-const setButtonLoading = (form, loading, textWhenLoading) => {
-  const button = $('button[type="submit"]', form);
-  if (!button) return;
-  if (!button.dataset.originalText) {
-    button.dataset.originalText = button.textContent.trim();
-  }
-  button.disabled = loading;
-  button.textContent = loading ? textWhenLoading : button.dataset.originalText;
-};
-
-const serializeContactForm = (form) => {
-  const formData = new FormData();
-  const phone = form.elements.phone?.value || "";
-  const countryCode = form.elements.country_code?.value || "";
-  formData.append("name", form.elements.name?.value || "");
-  formData.append("email", form.elements.email?.value || "");
-  formData.append("subject", form.elements.subject?.value || "");
-  formData.append("message", form.elements.message?.value || "");
-  formData.append("country_code", countryCode);
-  if (phone) {
-    formData.append("phone", phone);
-  }
-  formData.append("recaptcha", getRecaptchaToken(form));
-  return formData;
-};
-
-const initForms = () => {
-  $$("form").forEach((form) => {
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const route = document.body.dataset.route || "";
-      const isFresher = form.closest("#fresher-modal-shell");
-      const isInternship = route === "/internship";
-      const isContact =
-        !isFresher &&
-        !isInternship &&
-        form.elements.name &&
-        form.elements.email &&
-        form.elements.subject &&
-        form.elements.message;
-
-      if (isFresher) {
-        setButtonLoading(form, true, "Processing...");
-        window.setTimeout(() => {
-          alert("Application sent successfully!");
-          form.reset();
-          const nameNode = $("#fresher-file-name");
-          if (nameNode) nameNode.textContent = "No file chosen";
-          setButtonLoading(form, false, "Processing...");
-          closeModal($("#fresher-modal-shell"));
-        }, 1200);
-        return;
-      }
-
-      if (isInternship) {
-        if (!getRecaptchaToken(form)) {
-          alert("Please complete the ReCAPTCHA");
-          return;
-        }
-        setButtonLoading(form, true, "Sending...");
-        window.setTimeout(() => {
-          alert("Internship request submitted successfully!");
-          form.reset();
-          setButtonLoading(form, false, "Sending...");
-        }, 1200);
-        return;
-      }
-
-      if (isContact) {
-        if (!getRecaptchaToken(form)) {
-          alert("Please verify the captcha");
-          return;
-        }
-
-        setButtonLoading(form, true, "sending...");
-        try {
-          const response = await fetch(CONTACT_API_URL, {
-            method: "POST",
-            headers: {
-              Accept: "application/json",
-              "X-Requested-With": "XMLHttpRequest",
-            },
-            body: serializeContactForm(form),
-          });
-          const raw = await response.text();
-          let result = {};
-
-          try {
-            result = raw ? JSON.parse(raw) : {};
-          } catch (error) {
-            throw new Error("The contact form returned an invalid response. Please try again.");
-          }
-
-          if (!response.ok) {
-            const firstError = result.errors ? Object.values(result.errors).flat()[0] : null;
-            throw new Error(firstError || result.message || "Unable to send message");
-          }
-
-          alert(result.message || "message sent!");
-          form.reset();
-          try {
-            window.grecaptcha?.reset();
-          } catch (error) {
-            // Ignore reCAPTCHA reset failures on routes without an active widget.
-          }
-        } catch (error) {
-          alert(error.message || "error sending message");
-        } finally {
-          setButtonLoading(form, false, "sending...");
-        }
-      }
-    });
-  });
-};
-
-const initDeferredFeatures = () => {
-  initTestimonials();
-  initPortfoliosPage();
 };
 
 document.addEventListener("DOMContentLoaded", () => {
   initHeader();
-  initForms();
-  initPhoneInputs();
+  initChatbot();
+  initFresherModal();
   initRecaptchaFallback();
-
-  runWhenIdle(() => {
-    initChatbot();
-    initFresherModal();
-    initVideoCards();
-    initHeroSlider();
-    initCertificationsSlider();
-    initStatsCounters();
-    initFaqPage();
-    initDeferredFeatures();
-  });
+  initPhoneInputs();
+  initForms();
+  initVideoCards();
+  initHeroSlider();
+  initCertificationsSlider();
+  initStatsCounters();
+  initTestimonials();
+  initPortfoliosPage();
+  initFaqPage();
 });
