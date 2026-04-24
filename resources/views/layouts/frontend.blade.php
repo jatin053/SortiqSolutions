@@ -19,6 +19,15 @@
         && $viteManifestEntryFile !== ''
         && is_file(public_path('build/' . ltrim($viteManifestEntryFile, '/')));
     $localTailwindCssExists = is_file(public_path('frontend-assets/css/tailwind-fallback.css'));
+    $versionedAsset = static function (string $path): string {
+        $absolutePath = public_path($path);
+
+        if (! is_file($absolutePath)) {
+            return asset($path);
+        }
+
+        return asset($path) . '?v=' . filemtime($absolutePath);
+    };
     $resolvedPageMeta = ($pageMeta ?? null) instanceof \App\Support\Seo\PageMeta
         ? $pageMeta
         : \App\Support\Seo\PageMeta::forRoute($routeName);
@@ -62,7 +71,7 @@
       @if ($viteAssetsReady)
         @vite('resources/css/app.css')
       @elseif ($localTailwindCssExists)
-        <link rel="stylesheet" href="{{ asset('frontend-assets/css/tailwind-fallback.css') }}">
+        <link rel="stylesheet" href="{{ $versionedAsset('frontend-assets/css/tailwind-fallback.css') }}">
       @else
         <script>
           window.tailwind = window.tailwind || {};
@@ -86,7 +95,7 @@
       @if ($inlineFrontendCss)
         <style>{!! $inlineFrontendCss !!}</style>
       @else
-        <link rel="stylesheet" href="{{ asset('frontend-assets/css/main.css') }}">
+        <link rel="stylesheet" href="{{ $versionedAsset('frontend-assets/css/main.css') }}">
       @endif
       @if (! $recaptchaEnabled)
         <style>
@@ -282,7 +291,7 @@
     </div>
   </div>
 
-      <script src="{{ asset('frontend-assets/js/main.js') }}" defer></script>
+      <script src="{{ $versionedAsset('frontend-assets/js/main.js') }}" defer></script>
       @stack('scripts')
     </body>
   </html>

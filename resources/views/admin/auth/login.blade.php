@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    @php
+        $versionedAdminCss = is_file(public_path('css/admin.css'))
+            ? asset('css/admin.css') . '?v=' . filemtime(public_path('css/admin.css'))
+            : asset('css/admin.css');
+    @endphp
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Admin Login | Sortiq Solutions Admin</title>
@@ -8,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+    <link rel="stylesheet" href="{{ $versionedAdminCss }}">
 </head>
 <body class="auth-page">
     <div class="auth-shell">
