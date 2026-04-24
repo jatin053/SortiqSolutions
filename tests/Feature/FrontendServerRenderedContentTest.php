@@ -50,4 +50,19 @@ class FrontendServerRenderedContentTest extends TestCase
             ->assertSee('Ava Brooks')
             ->assertSee('Support page testimonial from the database.');
     }
+
+    public function test_frontend_layout_uses_https_urls_when_request_is_forwarded_as_https(): void
+    {
+        $response = $this
+            ->withServerVariables([
+                'HTTP_HOST' => 'sortiqsolutions.onrender.com',
+                'HTTP_X_FORWARDED_HOST' => 'sortiqsolutions.onrender.com',
+                'HTTP_X_FORWARDED_PROTO' => 'https',
+            ])
+            ->get('/');
+
+        $response->assertOk()
+            ->assertSee('https://sortiqsolutions.onrender.com', false)
+            ->assertDontSee('http://sortiqsolutions.onrender.com', false);
+    }
 }
