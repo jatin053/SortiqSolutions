@@ -1,9 +1,11 @@
-<form action="{{ $action }}" method="post" class="video-form admin-entry-form" novalidate>
+<form action="{{ $action }}" method="post" class="video-form admin-entry-form" enctype="multipart/form-data" novalidate>
     @csrf
 
     @if ($method !== 'POST')
         @method($method)
     @endif
+
+    @php($supportsVideoFileUploads = \App\Models\Video::supportsVideoFileUploads())
 
     <input type="hidden" name="slug" value="{{ old('slug', $video['slug']) }}">
 
@@ -48,6 +50,21 @@
                     @error('summary')
                         <p class="field-error">{{ $message }}</p>
                     @enderror
+
+                    <label class="admin-form-field">
+                        <span>YouTube URL</span>
+                        <input
+                            class="@error('youtube_url') is-invalid @enderror"
+                            name="youtube_url"
+                            type="text"
+                            value="{{ old('youtube_url', $video['youtube_url']) }}"
+                            placeholder="Paste the full YouTube link or the 11-character video ID"
+                        >
+                        <span class="field-help">Use this for the current video records already saved in your admin panel.</span>
+                    </label>
+                    @error('youtube_url')
+                        <p class="field-error">{{ $message }}</p>
+                    @enderror
                 </div>
             </section>
 
@@ -67,7 +84,7 @@
                     </div>
 
                     <p class="admin-microcopy">
-                        The preview uses the custom thumbnail when available, otherwise it falls back to the generated video thumbnail.
+                        The preview uses the local thumbnail when available, otherwise it falls back to the local placeholder image.
                     </p>
                 </div>
             </section>
@@ -135,37 +152,67 @@
             <section class="admin-subpanel">
                 <div class="admin-subpanel-head">
                     <span>Source</span>
-                    <h3>Video links</h3>
+                    <h3>{{ $supportsVideoFileUploads ? 'Video source and media' : 'Thumbnail media' }}</h3>
                 </div>
 
                 <div class="admin-subpanel-body">
+                    @if ($supportsVideoFileUploads)
+                        <label class="admin-form-field">
+                            <span>Video File</span>
+                            <input type="hidden" name="video_file" value="{{ old('video_file', $video['video_file']) }}">
+                            <input
+                                class="@error('video_file_upload') is-invalid @enderror"
+                                name="video_file_upload"
+                                type="file"
+                                accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v"
+                            >
+                            <span class="field-help">Optional. Upload a local file if you want it to replace the YouTube source.</span>
+                        </label>
+                        @error('video_file')
+                            <p class="field-error">{{ $message }}</p>
+                        @enderror
+                        @error('video_file_upload')
+                            <p class="field-error">{{ $message }}</p>
+                        @enderror
+                    @else
+                        <p class="admin-microcopy">
+                            This database is still using the YouTube-based video setup, so the frontend player uses the YouTube URL above.
+                        </p>
+                    @endif
+
                     <label class="admin-form-field">
-                        <span>YouTube URL</span>
+                        <span>Thumbnail Image</span>
+                        <input type="hidden" name="thumbnail" value="{{ old('thumbnail', $video['thumbnail']) }}">
                         <input
-                            class="@error('youtube_url') is-invalid @enderror"
-                            name="youtube_url"
-                            type="url"
-                            value="{{ old('youtube_url', $video['youtube_url']) }}"
-                            placeholder="https://www.youtube.com/watch?v=..."
+                            class="@error('thumbnail_file') is-invalid @enderror"
+                            name="thumbnail_file"
+                            type="file"
+                            accept="image/webp,image/png,image/jpeg"
                         >
+                        <span class="field-help">Upload a local thumbnail image for the card preview.</span>
                     </label>
-                    @error('youtube_url')
+                    @error('thumbnail_file')
                         <p class="field-error">{{ $message }}</p>
                     @enderror
 
-                    <label class="admin-form-field">
-                        <span>Custom Thumbnail URL or Path</span>
-                        <input
-                            class="@error('thumbnail') is-invalid @enderror"
-                            name="thumbnail"
-                            type="text"
-                            value="{{ old('thumbnail', $video['thumbnail']) }}"
-                            placeholder="Optional custom thumbnail"
-                        >
-                    </label>
-                    @error('thumbnail')
-                        <p class="field-error">{{ $message }}</p>
-                    @enderror
+                    @if ($supportsVideoFileUploads && $video['video_file'])
+                        <p class="current-logo-path">
+                            Current video: <strong>{{ $video['video_file'] }}</strong>
+                        </p>
+                    @elseif ($video['youtube_url'])
+                        <p class="current-logo-path">
+                            Current source: <strong>Legacy YouTube video</strong>
+                        </p>
+                        <p class="current-logo-path">
+                            YouTube URL: <strong>{{ $video['youtube_url'] }}</strong>
+                        </p>
+                    @endif
+
+                    @if ($video['thumbnail'])
+                        <p class="current-logo-path">
+                            Current thumbnail: <strong>{{ $video['thumbnail'] }}</strong>
+                        </p>
+                    @endif
                 </div>
             </section>
         </div>

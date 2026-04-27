@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BlogRequest;
 use App\Models\Blog;
+use App\Support\LocalMedia;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -80,7 +81,7 @@ class BlogController extends Controller
 
     public function store(BlogRequest $request): RedirectResponse
     {
-        $blog = Blog::create($request->validated());
+        $blog = Blog::create($this->payload($request));
 
         return redirect()
             ->route('admin.blogs.edit', $blog)
@@ -105,7 +106,7 @@ class BlogController extends Controller
 
     public function update(BlogRequest $request, Blog $blog): RedirectResponse
     {
-        $blog->update($request->validated());
+        $blog->update($this->payload($request, $blog));
 
         return redirect()
             ->route('admin.blogs.edit', $blog)
@@ -121,5 +122,28 @@ class BlogController extends Controller
         }
 
         return route('frontend.blog.show', $slug);
+    }
+
+    private function payload(BlogRequest $request, ?Blog $blog = null): array
+    {
+        $data = $request->validated();
+
+        unset($data['image_file']);
+
+        if ($request->hasFile('image_file')) {
+            if ($blog) {
+                LocalMedia::deleteUploadedFile($blog->image);
+            }
+
+            $data['image'] = LocalMedia::storeUploadedFile(
+                $request->file('image_file'),
+                'uploads/blogs',
+                $request->input('title', 'blog-image')
+            );
+        } elseif ($blog) {
+            $data['image'] = $blog->image;
+        }
+
+        return $data;
     }
 }

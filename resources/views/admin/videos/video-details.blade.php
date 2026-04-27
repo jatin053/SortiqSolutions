@@ -7,6 +7,11 @@
         $statusLabel = ucfirst($video['status']);
         $statusClass = $video['status'] === 'published' ? 'status-pill status-pill-success' : 'status-pill status-pill-muted';
         $videoUrl = url('videos#' . $video['slug']);
+        $sourceLabel = match ($video->playback_type) {
+            'file' => 'Local upload',
+            'youtube' => 'Legacy YouTube',
+            default => 'No source',
+        };
     @endphp
 
     @include('admin.partials.page-hero', [
@@ -31,6 +36,7 @@
     @include('admin.partials.overview-grid', [
         'items' => [
             ['label' => 'Status', 'value' => $statusLabel],
+            ['label' => 'Source', 'value' => $sourceLabel],
             ['label' => 'Published', 'value' => $video['published_label']],
             ['label' => 'Views', 'value' => $video['views']],
         ],
@@ -59,11 +65,38 @@
                 @endif
 
                 <div class="admin-link-strip">
-                    <span>YouTube URL</span>
-                    @if ($video['youtube_url'])
-                        <a href="{{ $video['youtube_url'] }}" target="_blank" rel="noopener">{{ $video['youtube_url'] }}</a>
+                    <span>Video Source</span>
+                    @if ($video['video_file'])
+                        <strong>{{ $video['video_file'] }}</strong>
+                    @elseif ($video['youtube_url'])
+                        <strong>{{ $video['youtube_url'] }}</strong>
                     @else
-                        <strong>Not provided yet.</strong>
+                        <strong>No video source saved yet.</strong>
+                    @endif
+                </div>
+
+                @if ($video->video_file_url)
+                    <div class="admin-detail-media">
+                        <video src="{{ $video->video_file_url }}" controls preload="metadata" class="w-full rounded-xl"></video>
+                    </div>
+                @elseif ($video->youtube_embed_url)
+                    <div class="admin-detail-media">
+                        <iframe
+                            src="{{ $video->youtube_embed_url }}"
+                            title="{{ $video['title'] }}"
+                            class="w-full rounded-xl aspect-video"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen
+                        ></iframe>
+                    </div>
+                @endif
+
+                <div class="admin-link-strip">
+                    <span>Thumbnail File</span>
+                    @if ($video['thumbnail'])
+                        <strong>{{ $video['thumbnail'] }}</strong>
+                    @else
+                        <strong>Using the local placeholder.</strong>
                     @endif
                 </div>
             </div>

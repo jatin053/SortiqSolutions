@@ -73,7 +73,7 @@ class SiteLayoutSetting extends Model
                         ['label' => 'About Us', 'url' => '/about-us'],
                         ['label' => 'Why Choose Us', 'url' => '/why-choose-us'],
                         ['label' => 'Terms', 'url' => '/terms'],
-                        ['label' => 'Portfolio', 'url' => '/portfolio'],
+                        ['label' => 'Portfolio', 'url' => '/portfolios'],
                         ['label' => 'Our Career', 'url' => '/career'],
                         ['label' => 'Our Clients', 'url' => '/clients'],
                         ['label' => 'Blog', 'url' => '/blog'],

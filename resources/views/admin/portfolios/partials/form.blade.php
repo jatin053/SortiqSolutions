@@ -1,4 +1,4 @@
-<form action="{{ $action }}" method="post" class="video-form" novalidate>
+<form action="{{ $action }}" method="post" class="video-form" enctype="multipart/form-data" novalidate>
     @csrf
 
     @if ($method !== 'POST')
@@ -69,18 +69,25 @@
                 <div class="meta-title">Portfolio Details</div>
                 <div class="meta-body review-fields">
                     <label>
-                        Project Image URL or Path
+                        Project Image
+                        <input type="hidden" name="image" value="{{ old('image', $portfolio['image']) }}">
                         <input
-                            class="@error('image') is-invalid @enderror"
-                            name="image"
-                            type="text"
-                            value="{{ old('image', $portfolio['image']) }}"
-                            placeholder="https://... or uploads/portfolio/project.jpg"
+                            class="@error('image_file') is-invalid @enderror"
+                            name="image_file"
+                            type="file"
+                            accept="image/webp,image/png,image/jpeg"
                         >
-                        @error('image')
+                        <span class="field-help">Upload a local portfolio image. The current image stays in place until you replace it.</span>
+                        @error('image_file')
                             <span class="field-error">{{ $message }}</span>
                         @enderror
                     </label>
+
+                    @if ($portfolio->image_url)
+                        <p class="current-logo-path">
+                            Current file: <strong>{{ $portfolio['image'] }}</strong>
+                        </p>
+                    @endif
 
                     <label>
                         Project Preview URL

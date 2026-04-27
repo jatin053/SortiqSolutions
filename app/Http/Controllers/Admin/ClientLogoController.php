@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ClientLogoRequest;
 use App\Models\ClientLogo;
+use App\Support\LocalMedia;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -126,31 +127,15 @@ class ClientLogoController extends Controller
         unset($data['logo']);
 
         if ($request->hasFile('logo')) {
-            $data['logo'] = $this->storeLogo($request);
+            $data['logo'] = LocalMedia::storeUploadedFile(
+                $request->file('logo'),
+                'uploads/client-logos',
+                $request->input('name', 'client-logo')
+            );
         } elseif ($clientLogo) {
             $data['logo'] = $clientLogo->logo;
         }
 
         return $data;
-    }
-
-    private function storeLogo(ClientLogoRequest $request): string
-    {
-        $file = $request->file('logo');
-        $directory = public_path('uploads/client-logos');
-
-        if (!is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
-
-        $filename = Str::slug($request->input('name'))
-            . '-'
-            . uniqid()
-            . '.'
-            . $file->getClientOriginalExtension();
-
-        $file->move($directory, $filename);
-
-        return 'uploads/client-logos/' . $filename;
     }
 }

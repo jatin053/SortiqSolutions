@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\VideoRequest;
 use App\Models\Video;
+use App\Support\LocalMedia;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -79,9 +80,7 @@ class VideoController extends Controller
 
     public function store(VideoRequest $request): RedirectResponse
     {
-        $data = $request->validated();
-
-        $video = Video::create($data);
+        $video = Video::create($this->payload($request));
 
         return redirect()
             ->route('admin.videos.edit', $video)
@@ -105,9 +104,7 @@ class VideoController extends Controller
 
     public function update(VideoRequest $request, Video $video): RedirectResponse
     {
-        $data = $request->validated();
-
-        $video->update($data);
+        $video->update($this->payload($request, $video));
 
         return redirect()
             ->route('admin.videos.edit', $video)
@@ -123,5 +120,48 @@ class VideoController extends Controller
         }
 
         return url('videos#' . $slug);
+    }
+
+    private function payload(VideoRequest $request, ?Video $video = null): array
+    {
+        $data = $request->validated();
+
+        unset($data['video_file_upload'], $data['thumbnail_file']);
+        $data['youtube_url'] = trim((string) ($data['youtube_url'] ?? $video?->youtube_url ?? ''));
+
+        if (Video::supportsVideoFileUploads()) {
+            if ($request->hasFile('video_file_upload')) {
+                if ($video) {
+                    LocalMedia::deleteUploadedFile($video->video_file);
+                }
+
+                $data['video_file'] = LocalMedia::storeUploadedFile(
+                    $request->file('video_file_upload'),
+                    'uploads/videos',
+                    $request->input('title', 'video-file')
+                );
+                $data['youtube_url'] = '';
+            } elseif ($video) {
+                $data['video_file'] = $video->video_file;
+            }
+        } else {
+            unset($data['video_file']);
+        }
+
+        if ($request->hasFile('thumbnail_file')) {
+            if ($video) {
+                LocalMedia::deleteUploadedFile($video->thumbnail);
+            }
+
+            $data['thumbnail'] = LocalMedia::storeUploadedFile(
+                $request->file('thumbnail_file'),
+                'uploads/videos/thumbnails',
+                $request->input('title', 'video-thumbnail')
+            );
+        } elseif ($video) {
+            $data['thumbnail'] = $video->thumbnail;
+        }
+
+        return $data;
     }
 }

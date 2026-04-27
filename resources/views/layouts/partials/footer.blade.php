@@ -2,11 +2,11 @@
   <div class="site-footer-inner max-w-7xl mx-auto px-6 lg:px-12 xl:px-20">
     <div class="site-footer-top flex flex-col lg:flex-row justify-between items-center gap-10 mb-12 border-b border-white/10 pb-10">
       <div class="site-footer-badges flex flex-wrap justify-center lg:justify-start items-center gap-5">
-        <img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/GF-min.png" alt="GoodFirms badge" class="site-footer-badge object-contain brightness-110 transition-transform duration-300 hover:scale-110">
-        <img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/digital-marketing-logo-min.png" alt="Google Analytics certification badge" class="site-footer-badge site-footer-badge--tall object-contain brightness-110 transition-transform duration-300 hover:scale-110">
-        <img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/upwork-logo-min.png" alt="Upwork badge" class="site-footer-badge object-contain brightness-110 transition-transform duration-300 hover:scale-110">
-        <img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/EN_legend_small.png" alt="Wix partner badge" class="site-footer-badge object-contain brightness-110 transition-transform duration-300 hover:scale-110">
-        <img src="https://sortiqsolutions.com/wp-content/uploads/2025/06/iso-certified-company-image.webp" alt="ISO certified badge" class="site-footer-badge object-contain brightness-110 transition-transform duration-300 hover:scale-110">
+        <img src="{{ asset('frontend-assets/media/brand/badges/goodfirms-badge.webp') }}" alt="GoodFirms badge" class="site-footer-badge object-contain brightness-110 transition-transform duration-300 hover:scale-110">
+        <img src="{{ asset('frontend-assets/media/brand/badges/google-analytics-badge.webp') }}" alt="Google Analytics certification badge" class="site-footer-badge site-footer-badge--tall object-contain brightness-110 transition-transform duration-300 hover:scale-110">
+        <img src="{{ asset('frontend-assets/media/brand/badges/upwork-badge.webp') }}" alt="Upwork badge" class="site-footer-badge object-contain brightness-110 transition-transform duration-300 hover:scale-110">
+        <img src="{{ asset('frontend-assets/media/brand/badges/wix-partner-badge.webp') }}" alt="Wix partner badge" class="site-footer-badge object-contain brightness-110 transition-transform duration-300 hover:scale-110">
+        <img src="{{ asset('frontend-assets/media/brand/badges/iso-certified-badge.webp') }}" alt="ISO certified badge" class="site-footer-badge object-contain brightness-110 transition-transform duration-300 hover:scale-110">
       </div>
 
       <div class="site-footer-contact flex flex-wrap justify-center lg:justify-end gap-10 text-[14px] text-gray-200">
@@ -66,7 +66,7 @@
             </a>
           </li>
           <li>
-            <a href="/portfolio" class="group flex items-center gap-3 text-gray-300 hover:text-white transition-colors">
+            <a href="{{ route('frontend.portfolio') }}" class="group flex items-center gap-3 text-gray-300 hover:text-white transition-colors">
               <span class="bg-white rounded-full w-5 h-5 flex items-center justify-center text-[#001a3d] group-hover:bg-[#ff6600] group-hover:text-white transition-all group-hover:translate-x-2">
                 <iconify-icon icon="lucide:chevron-right" width="12" height="12"></iconify-icon>
               </span>

@@ -32,6 +32,7 @@ class BlogRequest extends FormRequest
                 Rule::unique('blogs', 'slug')->ignore($this->route('blog')),
             ],
             'image' => ['nullable', 'string', 'max:255'],
+            'image_file' => ['nullable', 'file', 'mimes:webp,png,jpg,jpeg', 'max:4096'],
             'category' => ['nullable', Rule::in(Blog::CATEGORIES)],
             'excerpt' => ['nullable', 'string', 'max:255'],
             'content' => ['required', 'string', 'min:20', 'max:8000'],

@@ -65,7 +65,8 @@ Route::get('/reviews', [FrontendReviewController::class, 'index'])->name('fronte
 Route::get('/reviews/{slug}', [FrontendReviewController::class, 'show'])->name('frontend.reviews.show');
 Route::get('/clients', [FrontendClientController::class, 'index'])->name('frontend.clients');
 Route::get('/videos', [FrontendVideoController::class, 'index'])->name('frontend.videos');
-Route::get('/portfolio', [FrontendPortfolioController::class, 'index'])->name('frontend.portfolio');
+Route::get('/portfolios', [FrontendPortfolioController::class, 'index'])->name('frontend.portfolio');
+Route::redirect('/portfolio', '/portfolios', 301);
 
 Route::prefix('blog')->name('frontend.blog.')->group(function () use (
     $frontendRoutes

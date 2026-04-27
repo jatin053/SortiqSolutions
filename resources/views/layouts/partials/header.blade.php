@@ -152,7 +152,7 @@
         <iconify-icon icon="lucide:chevron-down" width="14" height="14" class="transition-transform group-hover:rotate-180 "></iconify-icon>
         <div class="absolute top-full pt-4 left-0 hidden group-hover:block z-50">
           <div class="bg-white shadow-xl rounded-lg border-t-4 border-[#ff6600] p-4 w-[260px]">
-            <a href="/portfolio" class="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 rounded-md text-[13px] text-gray-700 font-bold transition-colors">
+            <a href="{{ route('frontend.portfolio') }}" class="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 rounded-md text-[13px] text-gray-700 font-bold transition-colors">
               <iconify-icon icon="lucide:folder-open" width="18" height="18" class="text-[#ff6600] flex-shrink-0"></iconify-icon>
               <span class="whitespace-nowrap">Portfolio</span>
             </a>
@@ -306,7 +306,7 @@
             <iconify-icon icon="lucide:chevron-down" width="18" height="18"></iconify-icon>
           </button>
           <div id="mobile-accordion-2" data-mobile-accordion-panel class="hidden bg-gray-50 rounded-lg m-2">
-            <a href="/portfolio" class="flex items-center gap-3 p-3 text-[13px] font-semibold text-gray-700">
+            <a href="{{ route('frontend.portfolio') }}" class="flex items-center gap-3 p-3 text-[13px] font-semibold text-gray-700">
               <iconify-icon icon="lucide:folder-open" width="18" height="18" class="text-[#ff6600]"></iconify-icon>
               Portfolio
             </a>

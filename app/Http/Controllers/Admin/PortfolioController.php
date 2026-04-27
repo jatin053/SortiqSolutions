@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\PortfolioRequest;
 use App\Models\Portfolio;
+use App\Support\LocalMedia;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -86,9 +87,7 @@ class PortfolioController extends Controller
 
     public function store(PortfolioRequest $request): RedirectResponse
     {
-        $data = $request->validated();
-
-        $portfolio = Portfolio::create($data);
+        $portfolio = Portfolio::create($this->payload($request));
 
         return redirect()
             ->route('admin.portfolios.edit', $portfolio)
@@ -113,9 +112,7 @@ class PortfolioController extends Controller
 
     public function update(PortfolioRequest $request, Portfolio $portfolio): RedirectResponse
     {
-        $data = $request->validated();
-
-        $portfolio->update($data);
+        $portfolio->update($this->payload($request, $portfolio));
 
         return redirect()
             ->route('admin.portfolios.edit', $portfolio)
@@ -131,5 +128,28 @@ class PortfolioController extends Controller
         }
 
         return url('portfolio#' . $slug);
+    }
+
+    private function payload(PortfolioRequest $request, ?Portfolio $portfolio = null): array
+    {
+        $data = $request->validated();
+
+        unset($data['image_file']);
+
+        if ($request->hasFile('image_file')) {
+            if ($portfolio) {
+                LocalMedia::deleteUploadedFile($portfolio->image);
+            }
+
+            $data['image'] = LocalMedia::storeUploadedFile(
+                $request->file('image_file'),
+                'uploads/portfolios',
+                $request->input('title', 'portfolio-image')
+            );
+        } elseif ($portfolio) {
+            $data['image'] = $portfolio->image;
+        }
+
+        return $data;
     }
 }

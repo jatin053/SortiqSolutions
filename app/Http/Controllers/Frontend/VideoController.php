@@ -22,7 +22,9 @@ class VideoController extends Controller
             return Video::query()
                 ->published()
                 ->ordered()
-                ->get();
+                ->get()
+                ->filter(fn (Video $video) => filled($video->playback_url))
+                ->values();
         } catch (Throwable $exception) {
             report($exception);
 

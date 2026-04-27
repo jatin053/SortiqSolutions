@@ -2,16 +2,21 @@
 
 namespace App\Models;
 
+use App\Support\LocalMedia;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
 
 class Video extends Model
 {
+    protected static ?bool $videoFileColumnExists = null;
+
     protected $fillable = [
         'title',
         'slug',
         'youtube_url',
+        'video_file',
         'thumbnail',
         'summary',
         'published_at',
@@ -55,10 +60,29 @@ class Video extends Model
             return null;
         }
 
-        $pattern = '~(?:youtu\.be/|youtube\.com/watch\?v=|youtube\.com/embed/)([^&?/]+)~';
+        if (preg_match('/^[A-Za-z0-9_-]{11}$/', $url) === 1) {
+            return $url;
+        }
 
-        if (preg_match($pattern, $url, $matches)) {
-            return $matches[1];
+        $parts = parse_url($url);
+        $host = Str::lower((string) ($parts['host'] ?? ''));
+        $path = trim((string) ($parts['path'] ?? ''), '/');
+
+        parse_str((string) ($parts['query'] ?? ''), $query);
+
+        $candidateIds = [
+            $query['v'] ?? null,
+            str_contains($host, 'youtu.be') ? Str::before($path, '/') : null,
+            str_starts_with($path, 'embed/') ? Str::before(Str::after($path, 'embed/'), '/') : null,
+            str_starts_with($path, 'shorts/') ? Str::before(Str::after($path, 'shorts/'), '/') : null,
+        ];
+
+        foreach ($candidateIds as $candidateId) {
+            $candidateId = trim((string) $candidateId);
+
+            if (preg_match('/^[A-Za-z0-9_-]{11}$/', $candidateId) === 1) {
+                return $candidateId;
+            }
         }
 
         return null;
@@ -66,31 +90,59 @@ class Video extends Model
 
     public function getEmbedUrlAttribute(): ?string
     {
-        if ($this->youtube_id) {
-            return 'https://www.youtube.com/embed/' . $this->youtube_id;
+        return $this->playback_url;
+    }
+
+    public function getVideoFileUrlAttribute(): ?string
+    {
+        if (! self::supportsVideoFileUploads()) {
+            return null;
+        }
+
+        return LocalMedia::url($this->video_file);
+    }
+
+    public function getYoutubeEmbedUrlAttribute(): ?string
+    {
+        if (! $this->youtube_id) {
+            return null;
+        }
+
+        return 'https://www.youtube.com/embed/' . $this->youtube_id;
+    }
+
+    public function getYoutubeThumbnailUrlAttribute(): ?string
+    {
+        if (! $this->youtube_id) {
+            return null;
+        }
+
+        return 'https://i.ytimg.com/vi/' . $this->youtube_id . '/hqdefault.jpg';
+    }
+
+    public function getPlaybackTypeAttribute(): ?string
+    {
+        if ($this->video_file_url) {
+            return 'file';
+        }
+
+        if ($this->youtube_embed_url) {
+            return 'youtube';
         }
 
         return null;
     }
 
+    public function getPlaybackUrlAttribute(): ?string
+    {
+        return $this->video_file_url ?: $this->youtube_embed_url;
+    }
+
     public function getThumbnailUrlAttribute(): ?string
     {
-        if ($this->thumbnail) {
-            if (
-                Str::startsWith($this->thumbnail, 'http://') ||
-                Str::startsWith($this->thumbnail, 'https://')
-            ) {
-                return $this->thumbnail;
-            }
-
-            return asset($this->thumbnail);
-        }
-
-        if ($this->youtube_id) {
-            return 'https://img.youtube.com/vi/' . $this->youtube_id . '/hqdefault.jpg';
-        }
-
-        return null;
+        return LocalMedia::url($this->thumbnail)
+            ?: $this->youtube_thumbnail_url
+            ?: asset('frontend-assets/media/video-placeholder.svg');
     }
 
     public function getPublishedLabelAttribute(): string
@@ -100,5 +152,20 @@ class Video extends Model
         }
 
         return 'Not published';
+    }
+
+    public static function supportsVideoFileUploads(): bool
+    {
+        if (self::$videoFileColumnExists !== null) {
+            return self::$videoFileColumnExists;
+        }
+
+        try {
+            self::$videoFileColumnExists = Schema::hasColumn((new self())->getTable(), 'video_file');
+        } catch (\Throwable) {
+            self::$videoFileColumnExists = false;
+        }
+
+        return self::$videoFileColumnExists;
     }
 }

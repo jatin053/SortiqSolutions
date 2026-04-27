@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SiteLayoutSettingRequest;
 use App\Models\SiteLayoutSetting;
+use App\Support\LocalMedia;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class SiteLayoutSettingController extends Controller
@@ -36,8 +36,9 @@ class SiteLayoutSettingController extends Controller
         $data['header']['logo'] = $setting->data['header']['logo'] ?? '';
 
         if ($request->hasFile('header_logo_file')) {
-            $data['header']['logo'] = $this->storeImage(
+            $data['header']['logo'] = LocalMedia::storeUploadedFile(
                 $request->file('header_logo_file'),
+                'uploads/site-layout',
                 'header-logo'
             );
         } elseif ($request->filled('header.logo')) {
@@ -52,9 +53,10 @@ class SiteLayoutSettingController extends Controller
                     $file = $request->file('footer_badge_files.' . $index);
                     $label = $badge['label'] ?? 'footer-badge-' . $index;
 
-                    $data['footer_badges'][$index]['image'] = $this->storeImage(
+                    $data['footer_badges'][$index]['image'] = LocalMedia::storeUploadedFile(
                         $file,
-                        Str::slug($label)
+                        'uploads/site-layout',
+                        $label
                     );
                 }
             }
@@ -94,19 +96,5 @@ class SiteLayoutSettingController extends Controller
         }
 
         return array_values($result);
-    }
-
-    private function storeImage($file, string $prefix): string
-    {
-        $directory = public_path('uploads/site-layout');
-
-        if (!is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
-
-        $filename = $prefix . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
-        $file->move($directory, $filename);
-
-        return 'uploads/site-layout/' . $filename;
     }
 }

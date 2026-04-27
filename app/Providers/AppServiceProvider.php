@@ -32,11 +32,12 @@ class AppServiceProvider extends ServiceProvider
                     ->published()
                     ->ordered()
                     ->limit(18)
-                    ->get(['name', 'content', 'platform', 'rating', 'slug'])
+                    ->get(['name', 'content', 'platform', 'position', 'rating', 'slug'])
                     ->map(fn (Review $review) => [
                         'title' => $review->name,
                         'content' => $review->content,
                         'platform' => $review->platform,
+                        'position' => $review->position,
                         'rating' => $review->rating,
                         'slug' => $review->slug,
                     ])

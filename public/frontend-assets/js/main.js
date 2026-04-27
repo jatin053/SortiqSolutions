@@ -24,32 +24,57 @@ const parseJsonScript = (id) => {
   }
 };
 
-const normalizeWebsiteUrl = (value = "") => {
-  const url = String(value).trim();
-  if (!url) return "";
-  if (/^(https?:)?\/\//.test(url)) return url;
-  return url.startsWith("/") ? url : `/${url}`;
+const escapeHtmlAttribute = (value = "") => escapeHtml(value).replace(/'/g, "&#39;");
+
+const portfolioFilterButtonClass = (active) =>
+  `px-6 py-2 rounded-full text-sm font-bold transition-all border ${
+    active
+      ? "bg-[#001a3d] text-white border-[#001a3d]"
+      : "bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200"
+  }`;
+
+const renderPortfolioCard = (item = {}) => {
+  const title = String(item.title || "").trim() || "Portfolio Project";
+  const imageUrl = String(item.image_url || "").trim();
+
+  return `
+    <button
+      type="button"
+      data-portfolio-item
+      data-portfolio-title="${escapeHtmlAttribute(title)}"
+      data-portfolio-image="${escapeHtmlAttribute(imageUrl)}"
+      class="group relative overflow-hidden rounded-2xl aspect-[4/3] cursor-pointer bg-gray-100 shadow-sm text-left"
+    >
+      ${
+        imageUrl
+          ? `<img src="${escapeHtmlAttribute(imageUrl)}" class="w-full h-full object-cover transition-transform group-hover:scale-105" alt="${escapeHtmlAttribute(title)}" loading="lazy" decoding="async">`
+          : `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-700 px-6 text-center text-white font-bold">${escapeHtml(title)}</div>`
+      }
+      <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6">
+        <h3 class="text-white font-bold">${escapeHtml(title)}</h3>
+      </div>
+    </button>
+  `;
 };
 
-const isEmbeddablePortfolioUrl = (value = "") => {
-  const normalized = normalizeWebsiteUrl(value);
-  if (!normalized) return false;
+const renderPortfolioEmptyState = () => `
+  <div class="col-span-full rounded-3xl border border-gray-200 bg-white px-6 py-16 text-center text-gray-500 shadow-sm">
+    <h3 class="text-xl font-black text-[#001a3d]">No portfolio projects are available right now.</h3>
+  </div>
+`;
 
-  try {
-    return new URL(normalized, window.location.origin).origin === window.location.origin;
-  } catch {
-    return false;
-  }
-};
-
-const renderPortfolioText = (value = "") =>
-  String(value)
-    .trim()
-    .split(/\r\n|\r|\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => `<p class="text-slate-600 leading-7">${escapeHtml(line)}</p>`)
-    .join("");
+const renderPortfolioModalContent = ({ title, imageUrl }) => `
+  <div class="overflow-y-auto max-h-[85vh]">
+    ${
+      imageUrl
+        ? `<img src="${escapeHtmlAttribute(imageUrl)}" class="w-full" alt="${escapeHtmlAttribute(title)}">`
+        : `<div class="min-h-[340px] flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-700 px-6 text-center text-2xl font-black text-white">${escapeHtml(title)}</div>`
+    }
+    <div class="p-6">
+      <h2 class="text-2xl font-bold">${escapeHtml(title)}</h2>
+    </div>
+  </div>
+`;
 
 const setModalState = (shell, open) => {
   if (!shell) return;
@@ -283,21 +308,44 @@ const initForms = () => {
 };
 
 const initVideoCards = () => {
-  $$("[data-video-url]").forEach((card) => {
+  $$("[data-video-src]").forEach((card) => {
     card.addEventListener("click", () => {
-      const url = card.getAttribute("data-video-url");
-      if (!url || card.dataset.loaded === "true") return;
+      const sourceUrl = card.getAttribute("data-video-src");
+      const sourceType = card.getAttribute("data-video-type") || "file";
+      const posterUrl = card.getAttribute("data-video-poster");
+      const title = card.getAttribute("data-video-title") || "Sortiq video";
+      if (!sourceUrl || card.dataset.loaded === "true") return;
 
       card.dataset.loaded = "true";
+
+      if (sourceType === "youtube") {
+        const autoplayUrl = `${sourceUrl}${sourceUrl.includes("?") ? "&" : "?"}autoplay=1&rel=0&modestbranding=1`;
+
+        card.innerHTML = `
+          <iframe
+            src="${escapeHtml(autoplayUrl)}"
+            title="${escapeHtml(title)}"
+            class="w-full h-full border-0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+            loading="lazy"
+          ></iframe>
+        `;
+
+        return;
+      }
+
       card.innerHTML = `
-        <iframe
-          src="${escapeHtml(`${url}?autoplay=1&rel=0&modestbranding=1`)}"
-          title="Sortiq video"
-          class="w-full h-full border-0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen
-          loading="lazy"
-        ></iframe>
+        <video
+          src="${escapeHtml(sourceUrl)}"
+          ${posterUrl ? `poster="${escapeHtml(posterUrl)}"` : ""}
+          title="${escapeHtml(title)}"
+          class="w-full h-full object-cover"
+          controls
+          autoplay
+          playsinline
+          preload="metadata"
+        ></video>
       `;
     });
   });
@@ -440,117 +488,231 @@ const initStatsCounters = () => {
 
 const initTestimonials = () => {
   $$("[data-testimonials-section]").forEach((section) => {
+    const viewport = $("[data-testimonial-viewport]", section);
+    const track = $("[data-testimonial-track]", section);
     const panels = $$("[data-testimonial-panel]", section);
     const triggers = $$("[data-testimonial-trigger]", section);
-    if (!panels.length || !triggers.length) return;
+    if (!viewport || !track || !panels.length || !triggers.length) return;
 
     let active = 0;
+    let autoplayId = null;
+    let isPaused = false;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const centerActiveTrigger = () => {
+      const activeTrigger = triggers[active];
+      if (!activeTrigger) return;
+
+      if (track.scrollWidth <= viewport.clientWidth) {
+        track.style.transform = "translate3d(0, 0, 0)";
+        return;
+      }
+
+      const offset = (viewport.clientWidth / 2) - (activeTrigger.offsetLeft + (activeTrigger.offsetWidth / 2));
+      track.style.transform = `translate3d(${Math.round(offset)}px, 0, 0)`;
+    };
+
     const render = () => {
       panels.forEach((panel, index) => {
-        panel.hidden = index !== active;
+        const isActive = index === active;
+        panel.classList.toggle("is-active", isActive);
+        panel.setAttribute("aria-hidden", String(!isActive));
       });
 
       triggers.forEach((trigger, index) => {
         const isActive = index === active;
         trigger.setAttribute("aria-pressed", String(isActive));
-        trigger.classList.toggle("opacity-40", !isActive);
-        $("[data-testimonial-avatar]", trigger)?.classList.toggle("bg-[#002d5b]", isActive);
-        $("[data-testimonial-avatar]", trigger)?.classList.toggle("ring-[6px]", isActive);
-        $("[data-testimonial-avatar]", trigger)?.classList.toggle("ring-[#ff6a00]", isActive);
-        $("[data-testimonial-avatar]", trigger)?.classList.toggle("bg-slate-300", !isActive);
-        $("[data-testimonial-initials]", trigger)?.classList.toggle("text-white", isActive);
-        $("[data-testimonial-initials]", trigger)?.classList.toggle("text-xl", isActive);
-        $("[data-testimonial-initials]", trigger)?.classList.toggle("md:text-2xl", isActive);
-        $("[data-testimonial-initials]", trigger)?.classList.toggle("text-gray-100", !isActive);
-        $("[data-testimonial-initials]", trigger)?.classList.toggle("text-base", !isActive);
-        $("[data-testimonial-initials]", trigger)?.classList.toggle("md:text-lg", !isActive);
-        $("[data-testimonial-name]", trigger)?.classList.toggle("text-[#002d5b]", isActive);
-        $("[data-testimonial-name]", trigger)?.classList.toggle("text-[#94a3b8]", !isActive);
-        $("[data-testimonial-badge]", trigger)?.classList.toggle("hidden", !isActive);
-        $("[data-testimonial-verified]", trigger)?.classList.toggle("hidden", !isActive);
+        trigger.classList.toggle("is-active", isActive);
       });
+
+      centerActiveTrigger();
     };
 
-    triggers.forEach((button) => {
-      button.addEventListener("click", () => {
-        active = Number(button.getAttribute("data-testimonial-index") || "0");
+    const stopAutoplay = () => {
+      if (autoplayId !== null) {
+        window.clearInterval(autoplayId);
+        autoplayId = null;
+      }
+    };
+
+    const startAutoplay = () => {
+      if (prefersReducedMotion || panels.length < 2 || isPaused) return;
+
+      stopAutoplay();
+      autoplayId = window.setInterval(() => {
+        active = (active + 1) % panels.length;
         render();
+      }, 6500);
+    };
+
+    const moveTo = (nextIndex) => {
+      active = (nextIndex + panels.length) % panels.length;
+      render();
+    };
+
+    const pauseAutoplay = () => {
+      isPaused = true;
+      stopAutoplay();
+    };
+
+    const resumeAutoplay = () => {
+      isPaused = false;
+      startAutoplay();
+    };
+
+    triggers.forEach((button, index) => {
+      button.addEventListener("click", () => {
+        moveTo(index);
+        startAutoplay();
+      });
+
+      button.addEventListener("keydown", (event) => {
+        const currentIndex = Number(button.getAttribute("data-testimonial-index") || String(index));
+
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+          moveTo(currentIndex + 1);
+          triggers[active]?.focus();
+        }
+
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          moveTo(currentIndex - 1);
+          triggers[active]?.focus();
+        }
       });
     });
 
+    section.addEventListener("mouseenter", pauseAutoplay);
+    section.addEventListener("mouseleave", resumeAutoplay);
+    section.addEventListener("focusin", pauseAutoplay);
+    section.addEventListener("focusout", (event) => {
+      if (event.relatedTarget instanceof Node && section.contains(event.relatedTarget)) return;
+      resumeAutoplay();
+    });
+
+    window.addEventListener("resize", centerActiveTrigger);
+
     render();
-    window.setInterval(() => {
-      active = (active + 1) % panels.length;
-      render();
-    }, 7000);
+    startAutoplay();
   });
 };
 
 const initPortfoliosPage = () => {
+  const pageData = parseJsonScript("portfolio-page-data");
   const modal = $("#portfolio-modal");
   const contentNode = $("#portfolio-modal-content");
-  if (!modal || !contentNode) return;
+  const closeButton = $("#portfolio-modal-close");
+  const grid = $("#portfolio-grid");
+  const filterButtons = $$("[data-portfolio-filter]");
+  const pagination = $("#portfolio-pagination");
+  const previousButton = $("#portfolio-prev");
+  const nextButton = $("#portfolio-next");
+  const pageState = $("#portfolio-page-state");
+  const behanceWrap = $("#portfolio-behance-wrap");
+  if (!modal || !contentNode || !grid || !filterButtons.length) return;
 
-  $$("[data-portfolio-item]").forEach((button) => {
+  const items = Array.isArray(pageData?.items) ? pageData.items : [];
+  const itemsPerPage = Number(pageData?.itemsPerPage || "6");
+  let activeCategory = String(pageData?.activeCategory || "").trim() || "wordpress-development";
+  let currentPage = 1;
+
+  const closeModal = () => {
+    modal.hidden = true;
+    document.body.classList.remove("overflow-hidden");
+    contentNode.innerHTML = "";
+  };
+
+  const openModal = (button) => {
+    const title = button.getAttribute("data-portfolio-title")?.trim() || "Portfolio Project";
+    const imageUrl = button.getAttribute("data-portfolio-image")?.trim() || "";
+
+    modal.hidden = false;
+    document.body.classList.add("overflow-hidden");
+    contentNode.innerHTML = renderPortfolioModalContent({ title, imageUrl });
+  };
+
+  const bindPortfolioCardListeners = () => {
+    $$("[data-portfolio-item]", grid).forEach((button) => {
+      button.addEventListener("click", () => openModal(button));
+    });
+  };
+
+  const filteredItems = () => items.filter((item) => String(item.category_slug || "").trim() === activeCategory);
+
+  const updateFilterButtons = () => {
+    filterButtons.forEach((button) => {
+      const isActive = button.getAttribute("data-portfolio-filter") === activeCategory;
+      button.className = portfolioFilterButtonClass(isActive);
+    });
+  };
+
+  const updatePagination = (totalPages) => {
+    if (!pagination || !previousButton || !nextButton || !pageState) return;
+
+    if (totalPages <= 1) {
+      pagination.classList.add("hidden");
+      behanceWrap?.classList.add("pt-10");
+      return;
+    }
+
+    pagination.classList.remove("hidden");
+    behanceWrap?.classList.remove("pt-10");
+    pageState.textContent = `${currentPage} / ${totalPages}`;
+    previousButton.disabled = currentPage === 1;
+    nextButton.disabled = currentPage === totalPages;
+  };
+
+  const renderPortfolioPage = () => {
+    const categoryItems = filteredItems();
+    const totalPages = Math.ceil(categoryItems.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const visibleItems = categoryItems.slice(startIndex, startIndex + itemsPerPage);
+
+    grid.innerHTML = visibleItems.length
+      ? visibleItems.map((item) => renderPortfolioCard(item)).join("")
+      : renderPortfolioEmptyState();
+
+    updateFilterButtons();
+    updatePagination(totalPages);
+    bindPortfolioCardListeners();
+  };
+
+  filterButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      const projectUrl = normalizeWebsiteUrl(button.getAttribute("data-portfolio-url"));
-      const title = button.getAttribute("data-portfolio-title")?.trim() || "Portfolio Project";
-      const category = button.getAttribute("data-portfolio-category")?.trim() || "Portfolio";
-      const imageUrl = button.getAttribute("data-portfolio-image")?.trim() || "";
-      const summary = button.getAttribute("data-portfolio-summary")?.trim() || "";
-      const content = button.getAttribute("data-portfolio-content")?.trim() || "";
-      const canEmbed = isEmbeddablePortfolioUrl(projectUrl);
+      const category = button.getAttribute("data-portfolio-filter");
+      if (!category || category === activeCategory) return;
 
-      modal.hidden = false;
-      contentNode.innerHTML = `
-        <div class="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
-          <div class="bg-slate-950">
-            ${
-              imageUrl
-                ? `<img src="${escapeHtml(imageUrl)}" class="w-full h-full object-cover min-h-[280px]" alt="${escapeHtml(title)}">`
-                : `<div class="flex min-h-[280px] items-center justify-center px-8 text-center text-2xl font-black text-white">${escapeHtml(title)}</div>`
-            }
-          </div>
-          <div class="p-6 md:p-8">
-            <div class="inline-flex items-center rounded-full bg-orange-50 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-[#ff6600]">${escapeHtml(category)}</div>
-            <h2 class="mt-4 text-2xl md:text-3xl font-black text-[#001a3d]">${escapeHtml(title)}</h2>
-            ${summary ? `<p class="mt-4 text-[15px] leading-7 text-slate-700">${escapeHtml(summary)}</p>` : ""}
-            ${content ? `<div class="mt-6 space-y-4">${renderPortfolioText(content)}</div>` : ""}
-            ${
-              projectUrl
-                ? `<div class="mt-8 flex flex-wrap gap-3">
-                    <a href="${escapeHtml(projectUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-full bg-[#001a3d] px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-white transition-colors hover:bg-[#ff6600]">
-                      Open Project
-                      <span aria-hidden="true">&rarr;</span>
-                    </a>
-                  </div>`
-                : ""
-            }
-          </div>
-        </div>
-        ${
-          canEmbed
-            ? `<div class="border-t border-slate-200 bg-slate-50 p-4 md:p-6">
-                 <div class="mb-3">
-                   <h3 class="text-lg font-black text-[#001a3d]">Live Preview</h3>
-                   <p class="text-sm text-slate-500">If the preview does not load, open the project in a new tab.</p>
-                 </div>
-                 <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                   <iframe src="${escapeHtml(projectUrl)}" title="${escapeHtml(title)}" class="h-[70vh] w-full bg-white" loading="lazy"></iframe>
-                 </div>
-               </div>`
-            : ""
-        }
-      `;
+      activeCategory = category;
+      currentPage = 1;
+      renderPortfolioPage();
     });
   });
 
-  $("#portfolio-modal-close")?.addEventListener("click", () => {
-    modal.hidden = true;
+  previousButton?.addEventListener("click", () => {
+    if (currentPage === 1) return;
+
+    currentPage -= 1;
+    renderPortfolioPage();
   });
+
+  nextButton?.addEventListener("click", () => {
+    const totalPages = Math.ceil(filteredItems().length / itemsPerPage);
+    if (currentPage >= totalPages) return;
+
+    currentPage += 1;
+    renderPortfolioPage();
+  });
+
+  closeButton?.addEventListener("click", closeModal);
   modal.addEventListener("click", (event) => {
-    if (event.target === modal) modal.hidden = true;
+    if (event.target === modal) closeModal();
   });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !modal.hidden) closeModal();
+  });
+
+  renderPortfolioPage();
 };
 
 const initFaqPage = () => {

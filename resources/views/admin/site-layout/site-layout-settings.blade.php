@@ -28,9 +28,7 @@
                 return null;
             }
 
-            return \Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])
-                ? $path
-                : asset($path);
+            return \App\Support\LocalMedia::url($path);
         };
 
         $navRows = array_pad($settings['nav_links'] ?? [], 8, ['label' => '', 'url' => '', 'has_dropdown' => '0']);
@@ -323,4 +321,3 @@
         </div>
     </form>
 @endsection
-

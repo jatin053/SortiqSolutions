@@ -214,7 +214,7 @@
     <div class="relative h-full flex items-center justify-center p-4 font-['Plus_Jakarta_Sans',sans-serif]">
       <div class="modal-panel relative w-full max-w-5xl bg-white rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row shadow-2xl">
         <div class="hidden md:block w-5/12 relative">
-          <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1000" class="absolute inset-0 w-full h-full object-cover" alt="Hiring" loading="lazy" decoding="async">
+          <img src="{{ asset('frontend-assets/media/pages/shared/fresher-hiring-modal.webp') }}" class="absolute inset-0 w-full h-full object-cover" alt="Hiring" loading="lazy" decoding="async">
           <div class="absolute inset-0 bg-gradient-to-b from-[#FF5722]/40 to-[#00142e]/90 flex flex-col justify-end p-10">
             <h2 class="text-white text-4xl font-extrabold leading-tight mb-2">Kickstart Your Career</h2>
             <p class="text-white/80 font-medium">Join Sortiq Solutions and work on world-class projects.</p>

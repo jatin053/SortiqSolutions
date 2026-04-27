@@ -32,8 +32,10 @@ class HomeController extends Controller
                 'homeVideos' => Video::query()
                     ->published()
                     ->ordered()
-                    ->limit(4)
-                    ->get(),
+                    ->get()
+                    ->filter(fn (Video $video) => filled($video->playback_url))
+                    ->take(4)
+                    ->values(),
             ];
         } catch (Throwable $exception) {
             report($exception);

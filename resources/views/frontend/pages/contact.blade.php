@@ -32,7 +32,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <label class="contact-phone-field" for="contact-phone">
         <div class="contact-phone-prefix" aria-hidden="true">
-          <img src="https://flagcdn.com/w20/in.png" alt="India flag" class="contact-phone-flag" loading="lazy" decoding="async">
+          <img src="{{ asset('frontend-assets/media/flags/india.webp') }}" alt="India flag" class="contact-phone-flag" loading="lazy" decoding="async">
           <span class="contact-phone-code">+91</span>
         </div>
         <input id="contact-phone" name="phone" type="tel" inputmode="numeric" placeholder="Phone number" class="contact-phone-input" autocomplete="tel-national" required>

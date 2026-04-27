@@ -1,4 +1,4 @@
-<form action="{{ $action }}" method="post" class="blog-form" novalidate>
+<form action="{{ $action }}" method="post" class="blog-form" enctype="multipart/form-data" novalidate>
     @csrf
 
     @if ($method !== 'POST')
@@ -82,18 +82,25 @@
                 <div class="meta-title">Blog Details</div>
                 <div class="meta-body review-fields blog-fields">
                     <label>
-                        Featured Image URL or Path
+                        Featured Image
+                        <input type="hidden" name="image" value="{{ $image }}">
                         <input
-                            class="@error('image') is-invalid @enderror"
-                            name="image"
-                            type="text"
-                            value="{{ $image }}"
-                            placeholder="https://... or images/blog.jpg"
+                            class="@error('image_file') is-invalid @enderror"
+                            name="image_file"
+                            type="file"
+                            accept="image/webp,image/png,image/jpeg"
                         >
-                        @error('image')
+                        <span class="field-help">Upload a local blog image. The current image stays in place until you replace it.</span>
+                        @error('image_file')
                             <span class="field-error">{{ $message }}</span>
                         @enderror
                     </label>
+
+                    @if ($blog->image_url)
+                        <p class="current-logo-path">
+                            Current file: <strong>{{ $blog['image'] }}</strong>
+                        </p>
+                    @endif
 
                     <label>
                         Category

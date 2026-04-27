@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Support\LocalMedia;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class Blog extends Model
 {
@@ -59,18 +59,7 @@ class Blog extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        if (empty($this->image)) {
-            return null;
-        }
-
-        if (
-            Str::startsWith($this->image, 'http://') ||
-            Str::startsWith($this->image, 'https://')
-        ) {
-            return $this->image;
-        }
-
-        return asset($this->image);
+        return LocalMedia::url($this->image);
     }
 
     public function getPublishedLabelAttribute(): string

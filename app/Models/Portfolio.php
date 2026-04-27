@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\LocalMedia;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -71,19 +72,11 @@ class Portfolio extends Model
     {
         $image = trim((string) $this->image);
 
-        if ($image === '') {
+        if ($this->isMissingLocalUploadPath($image)) {
             return null;
         }
 
-        if (
-            Str::startsWith($image, 'http://') ||
-            Str::startsWith($image, 'https://') ||
-            Str::startsWith($image, '//')
-        ) {
-            return $image;
-        }
-
-        return asset(ltrim($image, '/'));
+        return LocalMedia::url($image) ?: $this->remoteImageUrl($image);
     }
 
     public function getWebsiteHrefAttribute(): ?string
@@ -94,11 +87,7 @@ class Portfolio extends Model
             return null;
         }
 
-        if (
-            Str::startsWith($websiteUrl, 'http://') ||
-            Str::startsWith($websiteUrl, 'https://') ||
-            Str::startsWith($websiteUrl, '//')
-        ) {
+        if (Str::startsWith($websiteUrl, ['http://', 'https://', '//'])) {
             return $websiteUrl;
         }
 
@@ -112,5 +101,29 @@ class Portfolio extends Model
         }
 
         return 'Not published';
+    }
+
+    private function remoteImageUrl(string $image): ?string
+    {
+        if ($image === '') {
+            return null;
+        }
+
+        if (Str::startsWith($image, ['http://', 'https://', '//'])) {
+            return $image;
+        }
+
+        return null;
+    }
+
+    private function isMissingLocalUploadPath(string $image): bool
+    {
+        if ($image === '' || Str::startsWith($image, ['http://', 'https://', '//'])) {
+            return false;
+        }
+
+        $relativePath = ltrim($image, '/');
+
+        return Str::startsWith($relativePath, 'uploads/') && ! is_file(public_path($relativePath));
     }
 }

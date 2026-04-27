@@ -50,7 +50,8 @@ class PortfolioRequest extends FormRequest
 
             'category_name' => 'required|string|max:120',
 
-            'image' => 'required|string|max:255',
+            'image' => 'required_without:image_file|string|max:255',
+            'image_file' => 'nullable|file|mimes:webp,png,jpg,jpeg|max:4096',
 
             'website_url' => [
                 'nullable',

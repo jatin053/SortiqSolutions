@@ -1,4 +1,4 @@
-﻿@extends('layouts.frontend')
+@extends('layouts.frontend')
 
 @section('title', 'FAQ | Sortiq Solutions')
 @section('body_attributes') data-route="/faq" @endsection
@@ -8,7 +8,7 @@
     <div class="w-full font-sans bg-gray-50 antialiased">
       <script type="application/ld+json">{"@@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What services does Sortiq Solutions provide?","acceptedAnswer":{"@type":"Answer","text":"Sortiq Solutions specializes in a wide range of digital services including Web Development, App Development, Software Development, Graphic Designing, and Digital Marketing (SEO/SMO)."}},{"@type":"Question","name":"How can I apply for an internship?","acceptedAnswer":{"@type":"Answer","text":"You can apply for an internship by clicking the 'Apply Internship' link in our header or by using the 'Fresher Hiring' portal on our website."}},{"@type":"Question","name":"Where is your office located?","acceptedAnswer":{"@type":"Answer","text":"Our office is located at E-51, Second Floor, Phase - 8, Industrial Area, S.A.S. Nagar, Mohali, Punjab 160071."}},{"@type":"Question","name":"How do I get a project quote?","acceptedAnswer":{"@type":"Answer","text":"You can get a project quote by filling out the 'Get In Touch' form with your requirements, or by calling us directly at +91 9646522110."}}]}</script>
       <header class="relative w-full h-48 md:h-64 lg:h-[280px] overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1500" alt="Sortiq Solutions Office - FAQ Support" class="w-full h-full object-cover">
+        <img src="{{ asset('frontend-assets/media/pages/faq/faq-hero.webp') }}" alt="Sortiq Solutions Office - FAQ Support" class="w-full h-full object-cover">
         <div class="absolute inset-0 bg-[#001a3d]/75 flex flex-col justify-center items-center text-center p-6">
           <h1 class="text-white text-3xl md:text-5xl font-extrabold mb-3 tracking-tight">FAQ</h1>
           <div class="w-16 h-1.5 bg-[#ff6600]"></div>

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\LocalMedia;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -47,17 +48,22 @@ class ClientLogo extends Model
 
     public function getLogoUrlAttribute(): ?string
     {
-        if (empty($this->logo)) {
+        $logo = trim((string) $this->logo);
+
+        if ($logo === '') {
             return null;
         }
 
+        $relativePath = ltrim($logo, '/');
+
         if (
-            Str::startsWith($this->logo, 'http://') ||
-            Str::startsWith($this->logo, 'https://')
+            ! Str::startsWith($logo, ['http://', 'https://'])
+            && Str::startsWith($relativePath, 'uploads/')
+            && ! is_file(public_path($relativePath))
         ) {
-            return $this->logo;
+            return null;
         }
 
-        return asset($this->logo);
+        return LocalMedia::url($this->logo);
     }
 }
