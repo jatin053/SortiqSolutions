@@ -1,76 +1,1664 @@
 @extends('layouts.frontend')
 
-@section('title', 'About Sortiq Solutions')
-@section('body_attributes') data-route="/about" @endsection
+
+
+@section('title', 'About Us - Sortiq Solutions')
+
+@section('body_attributes') data-route="/about-us" @endsection
+
+
+
+@push('head')
+
+<link rel="preload" as="image" href="{{ asset('frontend-assets/media/pages/about/about_us_background.webp') }}" type="image/webp" fetchpriority="high">
+
+<style>
+
+  :root  {
+
+    --sq-bg: #f2f2f2;
+
+    --sq-card-blue: #202846;
+
+  }
+
+  .sq-page  {
+
+    width: 100%;
+
+    overflow: hidden;
+
+    background: var(--sq-bg);
+
+  }
+
+  .sq-container  {
+
+    width: min(1145px, calc(100% - 30px));
+
+    margin: 0 auto;
+
+  }
+
+  .sq-heading  {
+
+    margin: 0;
+
+    color: var(--sq-blue);
+
+    font-size: 38px;
+
+    line-height: 1.15;
+
+    font-weight: 700;
+
+  }
+
+  .sq-line::after  {
+
+    content: "";
+
+    display: block;
+
+    width: 40px;
+
+    height: 3px;
+
+    margin: 28px 0 0;
+
+    background: var(--sq-orange);
+
+  }
+
+  .sq-lines::after  {
+
+    content: "";
+
+    display: block;
+
+    width: 40px;
+
+    height: 3px;
+
+    margin: 28px 0 0 12vw;
+
+    background: var(--sq-orange);
+
+  }
+
+  .sq-line-center::after  {
+
+    margin-left: auto;
+
+    margin-right: auto;
+
+  }
+
+  .sq-line-white::after  {
+
+    background: #fff;
+
+  }
+
+
+
+  .about-hero  {
+
+    position: relative;
+
+    min-height: 200px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+
+    background-image: linear-gradient(rgba(0, 0, 0, .7), rgba(0, 0, 0, .7)), url("{{ asset('frontend-assets/media/pages/about/about_us_background.webp') }}");
+
+    background-position: center;
+
+    background-size: cover;
+
+    background-repeat: no-repeat;
+
+}
+
+
+
+  .about-hero h1  {
+
+    margin: 0;
+
+    color: #fff !important;
+
+    font-size: 36px;
+
+    line-height: 1.08;
+
+    font-weight: 700;
+
+    text-shadow: 0 2px 4px rgba(0, 0, 0, .45);
+
+}
+
+
+
+  .about-hero .sq-line::after  {
+
+    margin-top: 33px;
+
+}
+
+
+
+  .about-main  {
+
+    padding: 58px 0 92px;
+
+    background: var(--sq-bg);
+
+}
+
+
+
+  .about-intro  {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 32px;
+
+    align-items: start;
+
+}
+
+
+
+  .about-copy  {
+
+    padding-top: 5px;
+
+    max-width: 100%;
+
+}
+
+
+
+  .about-copy .sq-heading  {
+
+    font-size: 32px;
+
+}
+
+
+
+  .about-copy p  {
+
+    font-family: 'Roboto', 'Nunito', sans-serif !important;
+
+    margin: 32px 0 0;
+
+    color: #111;
+
+    font-size: 15.5px;
+
+    line-height: 1.75;
+
+    font-weight: 400 !important;
+
+    text-align: justify;
+
+    letter-spacing: 0.1px;
+
+    word-spacing: 0.2px;
+
+}
+
+
+
+  .about-copy a  {
+
+    color: #1b65c9;
+
+    text-decoration: none;
+
+}
+
+
+
+  .about-image-wrap  {
+
+    position: relative;
+
+    width: 100%;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    margin-top: 0;
+
+}
+
+
+
+  .about-image-card  {
+
+    position: relative;
+
+    width: 100%;
+
+    max-width: 650px;
+
+    padding: 0;
+
+    background: transparent;
+
+    border-radius: 0;
+
+    box-shadow: none;
+
+    overflow: hidden;
+
+}
+
+
+
+  .about-image-card::before  {
+
+    display: none;
+
+}
+
+
+
+  .about-image  {
+
+    display: block;
+
+    width: 100%;
+
+    height: auto;
+
+    border-radius: 0;
+
+    box-shadow: none;
+
+    object-fit: cover;
+
+}
+
+
+
+  .about-pillars  {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr 1fr;
+
+    gap: 24px;
+
+    margin-top: 78px;
+
+    content-visibility: auto;
+
+    contain-intrinsic-size: 374px;
+
+}
+
+
+
+  .pillar-card  {
+
+    aspect-ratio: 1 / 1;
+
+   /* Force Square shape */
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    padding: 30px;
+
+   /* Reduced padding to fit square */
+
+    color: #fff;
+
+    background: var(--sq-card-blue);
+
+    box-shadow: 0 0 8px rgba(0, 0, 0, .35);
+
+    transition: color .28s ease, background-color .28s ease, transform .28s ease;
+
+}
+
+
+
+  .pillar-card h2  {
+
+    font-family: 'Roboto', 'Nunito', sans-serif !important;
+
+    margin: 0 0 15px;
+
+    color: inherit;
+
+    font-size: 30px;
+
+   /* Reduced size for square */
+
+    line-height: 1.15;
+
+    text-align: center;
+
+}
+
+
+
+  .pillar-card p  {
+
+    font-family: 'Roboto', 'Nunito', sans-serif !important;
+
+    margin: 12px;
+
+    line-height: 1.75;
+
+    font-weight: 400 !important;
+
+    text-align: justify;
+
+    font-size: 15px;
+
+    letter-spacing: 0.1px;
+
+    word-spacing: 0.2px;
+
+}
+
+
+
+  .pillar-card.left  {
+
+    border-bottom-right-radius: 70px;
+
+}
+
+
+
+  .pillar-card.right  {
+
+    border-bottom-right-radius: 70px;
+
+}
+
+
+
+  .pillar-card.middle  {
+
+    color: #000;
+
+    background: #ebcbbd;
+
+    border-top-left-radius: 70px;
+
+    border-top-right-radius: 70px;
+
+}
+
+
+
+  .pillar-card:hover  {
+
+    color: #fff;
+
+    background: #9C52B3;
+
+    transform: translateY(-4px);
+
+}
+
+
+
+  .pillar-card.middle:hover  {
+
+    transform: translateY(-6px);
+
+}
+
+
+
+  .about-lower  {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 60px;
+
+    align-items: start;
+
+    margin-top: 137px;
+
+}
+
+
+
+  .why-about .sq-heading,
+
+  .partner-form .sq-heading  {
+
+    font-size: 32px;
+
+}
+
+
+
+  .why-about p  {
+
+    font-family: 'Roboto', 'Nunito', sans-serif !important;
+
+    margin: 34px 0 0;
+
+    color: #111;
+
+    font-size: 15.9px;
+
+    line-height: 1.75;
+
+    font-weight: 400 !important;
+
+    text-align: justify;
+
+    letter-spacing: 0.1px;
+
+    word-spacing: 0.2px;
+
+}
+
+
+
+  .why-list  {
+
+    display: grid;
+
+    gap: 12px;
+
+    margin-top: 26px;
+
+}
+
+
+
+  .why-list p  {
+
+    position: relative;
+
+    margin: 0;
+
+    text-align: justify;
+
+    line-height: 1.75;
+
+    font-family: 'Roboto', 'Nunito', sans-serif !important;
+
+    font-weight: 400 !important;
+
+    font-size: 15px;
+
+}
+
+
+
+  .why-list p::before  {
+
+    content: "\2713";
+
+    display: inline-block;
+
+    margin-right: 10px;
+
+    color: #111;
+
+    font-size: 18px;
+
+    line-height: 1;
+
+    font-weight: 900;
+
+}
+
+
+
+  .partner-form  {
+
+    text-align: left;
+
+}
+
+
+
+  .partner-form .sq-heading  {
+
+    text-align: left;
+
+}
+
+
+
+  .partner-form .sq-form  {
+
+    margin-top: 38px;
+
+}
+
+
+
+  .sq-form  {
+
+    display: grid;
+
+    gap: 15px;
+
+}
+
+
+
+  .sq-form-row  {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 20px;
+
+}
+
+
+
+  .sq-field  {
+
+    position: relative;
+
+    display: block;
+
+    background: #fff;
+
+    border: 1px solid #dcdcdc;  
+
+}
+
+
+
+  .sq-field iconify-icon  {
+
+    position: absolute;
+
+    left: 14px;
+
+    top: 50%;
+
+    z-index: 2;
+
+    color: var(--sq-orange);
+
+    font-size: 18px;
+
+    transform: translateY(-50%);
+
+    pointer-events: none;
+
+}
+
+
+
+  .sq-field .sq-textarea-icon  {
+
+    top: 58px;
+
+    transform: none;
+
+}
+
+
+
+  .sq-input,
+
+  .sq-textarea  {
+
+    width: 100%;
+
+    border: 0;
+
+    border-radius: 0;
+
+    outline: none;
+
+    color: #222;
+
+    background: #fff;
+
+    font-family: inherit;
+
+    font-size: 15px;
+
+    font-style: italic;
+
+}
+
+
+
+  .sq-input  {
+
+    height: 56px;
+
+    min-height: 56px;
+
+    padding: 13px 15px 13px 45px;
+
+}
+
+
+
+  .sq-textarea  {
+
+    min-height: 110px;
+
+    padding: 20px 15px 15px 60px;
+
+    resize: none;
+
+}
+
+
+
+  .sq-input::placeholder,
+
+  .sq-textarea::placeholder  {
+
+    color: #9c9c9c;
+
+    opacity: 1;
+
+}
+
+
+
+  .iti  {
+
+    width: 100%;
+
+}
+
+
+
+  .sq-phone-field  {
+
+    min-height: 56px;
+
+}
+
+
+
+  #sq-phone  {
+
+    padding-left: 112px !important;
+
+}
+
+
+
+  .iti__selected-flag  {
+
+    padding-left: 12px !important;
+
+}
+
+
+
+  .iti__country-list  {
+
+    z-index: 9999 !important;
+
+}
+
+
+
+  .sq-recaptcha  {
+
+    width: 345px;
+
+    min-height: 78px;
+
+    max-width: 100%;
+
+    overflow: hidden;
+
+    display: none;
+
+    margin-top: 10px;
+
+}
+
+
+
+  .sq-recaptcha.is-visible  {
+
+    display: block;
+
+}
+
+
+
+  .sq-submit  {
+
+    width: 100%;
+
+    min-height: 56px;
+
+    padding: 16px;
+
+    border: 0;
+
+    border-radius: 0;
+
+    color: #fff;
+
+    background: var(--sq-orange);
+
+    font-size: 14px;
+
+    font-weight: 500;
+
+    cursor: pointer;
+
+    transition: background .25s ease;
+
+}
+
+
+
+  .sq-submit:hover  {
+
+    background: var(--sq-blue);
+
+}
+
+
+
+  .join-band  {
+
+    position: relative;
+
+    min-height: 365px;
+
+    display: flex;
+
+    align-items: center;
+
+    color: #fff;
+
+    text-align: center;
+
+    background-image: linear-gradient(rgba(0, 0, 0, .76), rgba(0, 0, 0, .76)), url("{{ asset('frontend-assets/media/pages/about/join-us-background.jpg') }}");
+
+    background-position: center;
+
+    background-size: cover;
+
+    background-repeat: no-repeat;
+
+    content-visibility: auto;
+
+    contain-intrinsic-size: 428px;
+
+}
+
+
+
+  .join-band h2  {
+
+    margin: 0;
+
+    color: #fff !important;
+
+    font-size: 26px;
+
+    line-height: 1.2;
+
+    font-weight: 700;
+
+}
+
+
+
+  .join-band .sq-line::after  {
+
+    margin-top: 29px;
+
+}
+
+
+
+  .join-band p  {
+
+    max-width: 1285px;
+
+    letter-spacing: 0.1px;
+
+    word-spacing: 0.2px;
+
+    margin: 25px auto 0;
+
+    color: #fff;
+
+    font-family: 'Roboto', 'Nunito', sans-serif !important;
+
+    font-size: 15.9px;
+
+    line-height: 1.75;
+
+    font-weight: 400 !important;
+
+}
+
+
+
+  .sq-reveal  {
+
+    opacity: 0;
+
+    transform: translateY(28px);
+
+    transition: opacity .65s ease, transform .65s ease;
+
+}
+
+
+
+  .sq-reveal.is-visible  {
+
+    opacity: 1;
+
+    transform: translateY(0);
+
+}
+
+
+
+  
+
+
+
+  @media (max-width: 991px)  {
+
+    .about-intro,
+
+    .about-pillars,
+
+    .about-lower,
+
+    .sq-form-row  {
+
+      grid-template-columns: 1fr;
+
+}
+
+
+
+    .about-hero  {
+
+      min-height: 180px;
+
+}
+
+
+
+    .about-image  {
+
+      height: auto;
+
+      aspect-ratio: 494 / 370;
+
+}
+
+
+
+    .about-main  {
+
+      padding: 45px 0 65px;
+
+}
+
+
+
+    .about-intro,
+
+    .about-lower  {
+
+      gap: 42px;
+
+}
+
+
+
+    .about-pillars  {
+
+      margin-top: 50px;
+
+      contain-intrinsic-size: 1180px;
+
+}
+
+
+
+    .about-lower  {
+
+      contain-intrinsic-size: 1240px;
+
+}
+
+
+
+    .pillar-card,
+
+    .pillar-card.middle  {
+
+      min-height: auto;
+
+      padding: 40px 28px;
+
+      border-radius: 0 0 54px 0;
+
+      box-shadow: none;
+
+      transition: none;
+
+      aspect-ratio: auto;
+
+}
+
+
+
+    .pillar-card:hover,
+
+    .pillar-card.middle:hover  {
+
+      transform: none;
+
+}
+
+
+
+    .sq-submit  {
+
+      transition: none;
+
+}
+
+
+
+    .sq-heading,
+
+    .about-copy .sq-heading,
+
+    .why-about .sq-heading,
+
+    .partner-form .sq-heading  {
+
+      font-size: 30px;
+
+}
+
+
+
+}
+
+  @media (max-width: 575px)  {
+
+    .about-lower  {
+
+      margin-top: 70px;
+
+}
+
+
+
+    .sq-recaptcha  {
+
+      width: 304px;
+
+      transform: scale(.88);
+
+      transform-origin: left top;
+
+}
+
+
+
+    .join-band  {
+
+      min-height: 360px;
+
+      padding: 60px 0 66px;
+
+}
+
+
+
+    .join-band p  {
+
+      font-size: 15px;
+
+      line-height: 1.5;
+
+}
+
+
+
+}
+
+</style>
+
+@endpush
+
+
 
 @section('content')
-<main class="font-raleway"><div class="font-raleway text-gray-800 bg-white overflow-hidden"><div class="relative h-[160px] md:h-[220px] bg-[#00142e] flex items-center justify-center overflow-hidden"><div class="absolute inset-0 opacity-40 bg-[url('{{ asset('frontend-assets/media/pages/about/about-hero.webp') }}')] bg-cover bg-center"></div><div class="relative text-center z-10 px-4"><h1 class="text-white text-3xl md:text-5xl font-bold mb-2 tracking-tight">About Us</h1><div class="w-12 h-1 bg-orange-500 mx-auto rounded-full"></div></div></div><section class="max-w-7xl mx-auto py-12 md:py-24 px-6 lg:px-20"><div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20"><div class="w-full lg:w-3/5 space-y-6 text-center lg:text-left order-2 lg:order-1"><h2 class="text-[#00215e] text-2xl md:text-4xl font-bold">About Us</h2><div class="w-10 h-1 bg-orange-500 -mt-4 mx-auto lg:mx-0 rounded-full"></div><div class="space-y-4 text-gray-600 leading-relaxed text-base md:text-lg text-justify lg:text-left"><p>At <span class="font-semibold text-[#00215e]">Sortiq Solutions Pvt. Ltd.</span>, innovation, excellence, and customer success are at the heart of everything we do. We work closely with our clients to have an in-depth understanding of their business challenges and deliver tailored <span class="font-semibold text-[#00215e]">IT solutions</span> that add significant value.</p><p>Our approach goes beyond technology; we believe in ethics, transparency, and responsibility, ensuring our work positively impacts both businesses and the people they serve.</p><p>By consistently delivering reliable, high-quality solutions, we focus on building long-term partnerships rather than one-time projects. We stay ahead of emerging technologies to help businesses confidently navigate digital transformation.</p></div></div><div class="w-full lg:w-2/5 flex justify-center order-1 lg:order-2"><div class="relative p-3 md:p-4 bg-[#00215e] w-full max-w-[260px] sm:max-w-sm aspect-[4/5] shadow-2xl"><div class="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-1/3 bg-orange-100/10 z-0"></div><img src="{{ asset('frontend-assets/media/pages/about/about-team-photo.webp') }}" alt="Our Team" class="relative z-10 w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000"></img></div></div></div></section><div class="max-w-7xl mx-auto px-6 lg:px-20 pb-16 md:pb-24"><div class="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-4 lg:gap-8 items-stretch"><div class="group bg-[#1a233a] text-white hover:bg-orange-600 p-8 md:p-10 rounded-br-[60px] md:rounded-br-[100px] shadow-lg flex flex-col items-center justify-center min-h-[320px] md:min-h-[400px] transition-all duration-500 ease-in-out hover:-translate-y-2"><h3 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">Our Vision</h3><p class="text-sm md:text-base leading-relaxed text-gray-200 group-hover:text-white text-center transition-colors duration-500">To become a trusted global technology partner by enabling businesses of all sizes to embrace digital transformation with confidence and measurable results.</p></div><div class="group bg-[#e9cfc0] text-gray-900 hover:bg-orange-600 hover:text-white p-8 md:p-10 rounded-t-[60px] md:rounded-t-[100px] shadow-xl flex flex-col items-center justify-center min-h-[320px] md:min-h-[400px] md:-translate-y-4 transition-all duration-500 ease-in-out hover:md:-translate-y-8"><h3 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">Our Mission</h3><p class="text-sm md:text-base leading-relaxed text-center font-medium group-hover:font-normal transition-colors duration-500">To deliver innovative, reliable, and scalable IT solutions that simplify digital challenges and help businesses achieve sustainable and measurable growth.</p></div><div class="group bg-[#1a233a] text-white hover:bg-orange-600 p-8 md:p-10 rounded-bl-[60px] md:rounded-bl-[100px] shadow-lg flex flex-col items-center justify-center min-h-[320px] md:min-h-[400px] transition-all duration-500 ease-in-out hover:-translate-y-2"><h3 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">Our Core Values</h3><p class="text-sm md:text-base leading-relaxed text-gray-200 group-hover:text-white text-center transition-colors duration-500">Integrity, innovation, transparency, and customer success guide our decisions and strengthen our client relationships for a long-lasting impact.</p></div></div></div></div><section class="max-w-7xl mx-auto px-6 lg:px-20 py-16 font-sans"><div class="grid grid-cols-1 lg:grid-cols-2 gap-16"><div class="space-y-6"><h2 class="text-[#00215e] text-4xl font-bold">Why Choose Us?</h2><div class="w-12 h-1 bg-[#ff5a00]"></div><p class="text-gray-700 text-lg leading-relaxed">At <span class="font-semibold text-[#00215e]">Sortiq Solutions Pvt. Ltd.</span>, we don't just offer IT service, we create practical solutions that help businesses grow and perform better. What makes us different is our clear focus on results, quality, and long-term value.</p><ul class="space-y-6"><li class="flex items-start gap-3"><span class="text-[#00215e] font-bold mt-1">&bull;</span><p class="text-gray-800 text-lg"><span class="font-bold">Expertise with Vision</span> – Our experts stay updated with the latest technologies and industry practices to deliver smart, secure, and scalable solutions.</p></li><li class="flex items-start gap-3"><span class="text-[#00215e] font-bold mt-1">&bull;</span><p class="text-gray-800 text-lg"><span class="font-bold">Client-Centric Approach</span> – We take time to understand your business, challenges, and goals so we can build solutions that truly fit your needs.</p></li><li class="flex items-start gap-3"><span class="text-[#00215e] font-bold mt-1">&bull;</span><p class="text-gray-800 text-lg"><span class="font-bold">Reliable &amp; Scalable Solutions</span> – Whether you are a growing startup or an established enterprise, our solutions are built to adapt and scale as your business grow.</p></li><li class="flex items-start gap-3"><span class="text-[#00215e] font-bold mt-1">&bull;</span><p class="text-gray-800 text-lg"><span class="font-bold">Commitment to Quality</span> – We follow high standards across every project to ensure reliability, performance, and long-term stability.</p></li></ul></div><div class="space-y-6"><div class="text-center lg:text-left"><h2 class="text-[#00215e] text-4xl font-bold">Partner with Sortiq Solutions!</h2><div class="w-12 h-1 bg-[#ff5a00] mx-auto lg:mx-0 mt-4"></div></div>
-  <form class="space-y-4 font-raleway">
-    <input type="hidden" name="country_code" value="+91">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="relative">
-        <iconify-icon icon="lucide:user" width="20" height="20" class="absolute left-3 top-3 text-[#ff5a00]"></iconify-icon>
-        <input name="name" type="text" placeholder="enter your name" class="w-full pl-11 py-3 border rounded-md bg-gray-50/30 outline-none focus:border-[#ff5a00]" required>
-      </div>
-      <div class="relative">
-        <iconify-icon icon="lucide:mail" width="20" height="20" class="absolute left-3 top-3 text-[#ff5a00]"></iconify-icon>
-        <input name="email" type="email" placeholder="enter your email" class="w-full pl-11 py-3 border rounded-md bg-gray-50/30 outline-none focus:border-[#ff5a00]" required>
-      </div>
+
+<main class="sq-page">
+
+  <section class="about-hero">
+
+    <div class="sq-container">
+
+      <h1 class="sq-line sq-line-center sq-line-white">About Us</h1>
+
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="relative flex items-center border rounded-md bg-gray-50/30 focus-within:border-[#ff5a00]">
-        <div class="flex items-center gap-1 px-3 cursor-default border-r h-full py-3">
-          <img src="{{ asset('frontend-assets/media/flags/india.webp') }}" alt="India flag" class="w-5" loading="lazy" decoding="async">
-          <span class="text-sm font-normal">+91</span>
-          <iconify-icon icon="lucide:chevron-down" width="14" height="14" class="opacity-70"></iconify-icon>
+  </section>
+
+
+
+  <section class="about-main">
+
+    <div class="sq-container">
+
+      <div class="about-intro sq-reveal">
+
+        <div class="about-copy">
+
+          <h2 class="sq-heading sq-line">About Us</h2>
+
+          <p>At Sortiq Solutions Pvt. Ltd., innovation, excellence and customer success are at the heart of everything we do. We work closely with our clients to have an in-depth understanding of their business challenges and deliver tailored<a href="https://staging.sortiqsolutions.com/"> IT solutions</a> that add significant value. With a strong foundation of providing IT services since 2016, our approach goes beyond technologyâ€”we believe in ethics, transparency and responsibility, ensuring our work positively impacts both businesses and the people they serve.
+
+          <br> Our approach goes beyond technology, we believe in ethics, transparency and responsibility ensuring our work positively impacts both businesses and the people they serve.
+
+By consistently delivering reliable, high-quality solutions, we focus on building long-term partnerships rather than one-time projects. We stay ahead of emerging technologies to help businesses confidently navigate digital transformation, improve operational efficiency, and secure scalability. Our team has vast industry experience in designing tailor-made, future-proof solutions that grow with our clientsâ€™ needs to foster sustainable development.</p>
+
         </div>
-        <input name="phone" type="tel" placeholder="phone number" class="w-full px-4 py-3 bg-transparent outline-none" required>
+
+
+
+        <div class="about-image-wrap">
+
+          <div class="about-image-card">
+
+            <img class="about-image" src="{{ asset('frontend-assets/media/pages/about/about-image.png') }}" alt="About Image" width="600" height="494" sizes="(max-width: 991px) calc(100vw - 30px), 552px" loading="lazy" decoding="async" fetchpriority="low">
+
+          </div>
+
+        </div>
+
       </div>
 
-      <div class="relative">
-        <iconify-icon icon="lucide:list-checks" width="20" height="20" class="absolute left-3 top-3 text-[#ff5a00]"></iconify-icon>
-        <input name="subject" type="text" placeholder="subject" class="w-full pl-11 py-3 border rounded-md bg-gray-50/30 outline-none focus:border-[#ff5a00]" required>
+
+
+      <div class="about-pillars sq-reveal">
+
+        <article class="pillar-card left">
+
+          <h2>Our Vision</h2>
+
+          <p>Our vision is to become a trusted global technology partner by enabling businesses of all sizes to embrace digital transformation with confidence. We care about performance, how experience feels and actual results that guide your business forward.</p>
+
+        </article>
+
+
+
+        <article class="pillar-card middle">
+
+          <h2>Our Mission</h2>
+
+          <p>Our mission is to deliver innovative, reliable, and scalable IT solutions that simplify digital challenges and help businesses achieve measurable growth. Our goal is to develop value-driven solutions that improve productivity, effectiveness, and long-term success.</p>
+
+        </article>
+
+
+
+        <article class="pillar-card right">
+
+          <h2>Our Core Values</h2>
+
+          <p>The core values of all we do are integrity, innovation, transparency, and customer success. These values guide our decisions, strengthen client relationships, and guarantee that we provide superior solutions that have a long-lasting effect.</p>
+
+        </article>
+
       </div>
+
+
+
+      <div class="about-lower sq-reveal">
+
+        <section class="why-about">
+
+          <h2 class="sq-heading sq-line">Why Choose Us?</h2>
+
+          <p>At Sortiq Solutions Pvt. Ltd., we don&rsquo;t just offer IT service, we create practical solutions that help businesses grow and perform better. What makes us different is our clear focus on results, quality, and long-term value.</p>
+
+          <div class="why-list">
+
+            <p><strong>Expertise with Vision &ndash;</strong> Our experts stay updated with the latest technologies and industry practices to deliver smart, secure, and scalable solutions.</p>
+
+            <p><strong>Client-Centric Approach &ndash;</strong> We take time to understand your business, challenges, and goals so we can build solutions that truly fit your needs.</p>
+
+            <p><strong>Reliable &amp; Scalable Solutions &ndash;</strong> Whether you are a growing startup or an established enterprise, our solutions are built to adapt and scale as your business grows.</p>
+
+            <p><strong>Commitment to Quality &ndash;</strong> We follow high standards across every project to ensure reliability, performance, and long-term stability.</p>
+
+          </div>
+
+        </section>
+
+
+
+        <section class="partner-form">
+
+          <h2 class="sq-heading sq-lines">Partner with Sortiq Solutions!</h2>
+
+          <form action="{{ route('api.contact-messages.store') }}" method="post" class="sq-form sortiq-contact-form">
+
+            @csrf
+
+            <input type="hidden" name="action" value="sortiq_contact_form">
+
+            <div class="sq-form-row">
+
+              <label class="sq-field">
+
+                <iconify-icon icon="fa6-solid:user"></iconify-icon>
+
+                <input class="sq-input" name="name" type="text" placeholder="Enter Your Name" required>
+
+              </label>
+
+              <label class="sq-field">
+
+                <iconify-icon icon="fa6-solid:envelope"></iconify-icon>
+
+                <input class="sq-input" name="email" type="email" placeholder="Enter Your Email" required>
+
+              </label>
+
+            </div>
+
+            <div class="sq-form-row">
+
+              <div class="sq-field sq-phone-field">
+
+                <input class="sq-input" id="sq-phone" name="phone" type="tel" placeholder="Enter Your Phone Number" required>
+
+              </div>
+
+              <label class="sq-field">
+
+                <iconify-icon icon="fa6-solid:list"></iconify-icon>
+
+                <input class="sq-input" name="subject" type="text" placeholder="Subject" required>
+
+              </label>
+
+            </div>
+
+            <label class="sq-field">
+
+              <iconify-icon class="sq-textarea-icon" icon="fa6-solid:comments"></iconify-icon>
+
+              <textarea class="sq-textarea" name="message" placeholder="Enter your message" required></textarea>
+
+            </label>
+
+            <div class="sq-recaptcha" id="recaptcha-container" aria-live="polite">
+
+              <div id="recaptcha-box"></div>
+
+            </div>
+
+            <button type="submit" class="sq-submit">Send Message</button>
+
+          </form>
+
+        </section>
+
+      </div>
+
     </div>
 
-    <div class="relative">
-      <iconify-icon icon="lucide:message-square" width="20" height="20" class="absolute left-3 top-3 text-[#ff5a00]"></iconify-icon>
-      <textarea name="message" rows="5" placeholder="enter your message" class="w-full pl-11 py-3 border rounded-md bg-gray-50/30 resize-none outline-none focus:border-[#ff5a00]" required></textarea>
+  </section>
+
+
+
+  <section class="join-band">
+
+    <div class="sq-container sq-reveal">
+
+      <h2 class="sq-line sq-line-center sq-line-white">Join Us at Sortiq Solutions!</h2>
+
+      <p>Join Sortiq Solutions Pvt. Ltd. and take a step toward success! Whether you&rsquo;re an aspiring IT professional looking to break into the industry, a seasoned expert seeking to enhance your skills, or a business owner aiming to leverage technology for growth, we are here to support your journey. Our expert-led training programs provide in-depth knowledge, while hands-on learning ensures you gain practical experience. We also offer career guidance, including resume assistance, to help you stand out in the competitive job market. For businesses, we provide customized IT solutions to streamline operations and drive innovation. At Sortiq Solutions, we believe in empowering individuals and organizations with the right tools and expertise to excel in the ever-evolving world of technology. Take control of your future and join us today!</p>
+
     </div>
 
-    <div class="py-2">
-      @include('components.recaptcha')
-    </div>
+  </section>
 
-    <button type="submit" class="w-full bg-[#ff5a00] text-white font-bold py-4 rounded-md hover:bg-[#e65100] transition-colors uppercase">
-      send message
-    </button>
-  </form>
-</div></div></section><section class="relative h-[600px] w-full overflow-hidden flex items-center justify-center font-sans"><div class="absolute inset-0 bg-cover bg-center z-0" style="background-image:url('{{ asset('frontend-assets/media/pages/about/about-hero.webp') }}')"><div class="absolute inset-0 bg-black/75 backdrop-blur-[1px]"></div></div><div class="relative z-10 w-full max-w-4xl px-6 text-center text-white h-[450px] overflow-hidden"><div class="animate-scroll-up-stop flex flex-col items-center"><h2 class="text-3xl md:text-4xl font-bold mb-4 tracking-wide">Join Us at Sortiq Solutions!</h2><div class="w-16 h-1 bg-white mx-auto mb-8"></div><div class="space-y-6 text-lg md:text-xl leading-relaxed text-gray-100 font-light"><p>Join Sortiq Solutions Pvt. Ltd. and take a step toward success! Whether you're an aspiring IT professional looking to break into the industry, a seasoned expert seeking to enhance your skills, or a business owner aiming to leverage technology for growth, we are here to support your journey.</p><p>Our expert-led training programs provide in-depth knowledge, while hands-on learning ensures you gain practical experience. We also offer career guidance, including resume assistance, to help you stand out in the competitive job market. For businesses, we provide customized IT solutions to streamline operations and drive innovation. At Sortiq Solutions, we believe in empowering individuals and organizations with the right tools and expertise to excel in the ever-evolving world of technology. Take control of your future and join us today!</p></div></div></div><style>
-        @keyframes scrollUpStop {
-          0% {
-            /* Start completely below the container view */
-            transform: translateY(100%);
-            opacity: 0;
-          }
-          20% {
-            opacity: 1;
-          }
-          100% {
-            /* 0% means it stops exactly where the text is defined in the HTML */
-            transform: translateY(0%);
-            opacity: 1;
-          }
-        }
+</main>
 
-        .animate-scroll-up-stop {
-          /* 12s duration, ease-out makes it slow down as it reaches the top */
-          /* 'forwards' ensures it stays at the 100% keyframe forever */
-          animation: scrollUpStop 10s ease-out forwards;
-        }
-      </style></section></main>
+
+
 @endsection
+
+
+
+@push('scripts')
+
+<script>
+
+(function() {
+
+  const revealItems = document.querySelectorAll('.sq-reveal');
+
+  if (revealItems.length) {
+
+    if ('IntersectionObserver' in window) {
+
+      const revealObserver = new IntersectionObserver(function(entries) {
+
+        entries.forEach(function(entry) {
+
+          if (entry.isIntersecting) {
+
+            entry.target.classList.add('is-visible');
+
+            revealObserver.unobserve(entry.target);
+
+          }
+
+        });
+
+      }, { threshold: .12, rootMargin: '0px 0px -50px' });
+
+
+
+      revealItems.forEach(function(item) { revealObserver.observe(item); });
+
+    } else {
+
+      revealItems.forEach(function(item) { item.classList.add('is-visible'); });
+
+    }
+
+  }
+
+
+
+  const loadScript = function(src) {
+
+    return new Promise(function(resolve, reject) {
+
+      const existing = document.querySelector('script[src="' + src + '"]');
+
+      if (existing) {
+
+        if (src.includes('intlTelInput') && typeof window.intlTelInput === 'function') {
+
+          resolve();
+
+          return;
+
+        }
+
+        existing.addEventListener('load', resolve, { once: true });
+
+        if (existing.dataset.loaded === 'true') resolve();
+
+        return;
+
+      }
+
+
+
+      const script = document.createElement('script');
+
+      script.src = src;
+
+      script.async = true;
+
+      script.defer = true;
+
+      script.onload = function() {
+
+        script.dataset.loaded = 'true';
+
+        resolve();
+
+      };
+
+      script.onerror = reject;
+
+      document.head.appendChild(script);
+
+    });
+
+  };
+
+
+
+  const loadStyle = function(href) {
+
+    if (document.querySelector('link[href="' + href + '"]')) return;
+
+
+
+    const link = document.createElement('link');
+
+    link.rel = 'stylesheet';
+
+    link.href = href;
+
+    document.head.appendChild(link);
+
+  };
+
+
+
+  const form = document.querySelector('.sq-form');
+
+  const formSection = document.querySelector('.partner-form');
+
+  const phone = document.querySelector('#sq-phone');
+
+  let phonePluginLoading = false;
+
+  let phonePluginReady = false;
+
+
+
+  if (!form) return;
+
+
+
+  const loadPhonePlugin = function() {
+
+    if (!phone || phonePluginLoading || phonePluginReady) return;
+
+
+
+    phonePluginLoading = true;
+
+    loadStyle('https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/css/intlTelInput.css');
+
+    loadScript('https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/js/intlTelInput.min.js').then(function() {
+
+      if (!window.intlTelInput || phonePluginReady) return;
+
+
+
+      phonePluginReady = true;
+
+      phoneInput = window.intlTelInput(phone, {
+
+        initialCountry: 'in',
+
+        separateDialCode: true,
+
+        nationalMode: true,
+
+        dropdownContainer: document.body,
+
+        utilsScript: 'https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/js/utils.js'
+
+      });
+
+    }).catch(function() {
+
+      phonePluginLoading = false;
+
+    });
+
+  };
+
+
+
+  const loadFormEnhancements = function() {
+
+    loadPhonePlugin();
+
+  };
+
+
+
+  if (formSection && 'IntersectionObserver' in window) {
+
+    const phoneObserver = new IntersectionObserver(function(entries) {
+
+      if (entries.some(function(entry) { return entry.isIntersecting; })) {
+
+        loadFormEnhancements();
+
+        phoneObserver.disconnect();
+
+      }
+
+    }, { rootMargin: '250px 0px' });
+
+
+
+    phoneObserver.observe(formSection);
+
+  } else {
+
+    window.addEventListener('load', loadFormEnhancements, { once: true });
+
+  }
+
+
+
+  if (phone) {
+
+    phone.addEventListener('focus', loadFormEnhancements, { once: true });
+
+    phone.addEventListener('pointerdown', loadFormEnhancements, { once: true, passive: true });
+
+  }
+
+
+
+  if (form) {
+
+    form.addEventListener('focusin', loadFormEnhancements, { once: true });
+
+    form.addEventListener('pointerenter', loadFormEnhancements, { once: true });
+
+  }
+
+
+
+  /* ===== Lazy load reCAPTCHA only after user interacts with the form ===== */
+
+  const recaptchaContainer = document.querySelector('#recaptcha-container');
+
+  const recaptchaBox = document.querySelector('#recaptcha-box');
+
+  const recaptchaSiteKey = @json(\App\Support\Recaptcha::siteKeyForRequest(request()));
+
+  let recaptchaScriptLoading = false;
+
+  let recaptchaRendered = false;
+
+  let recaptchaWidgetId = null;
+
+
+
+  const showRecaptcha = function() {
+
+    if (recaptchaContainer) {
+
+      recaptchaContainer.classList.add('is-visible');
+
+    }
+
+  };
+
+
+
+  const renderRecaptcha = function() {
+
+    if (recaptchaRendered || !window.grecaptcha || !recaptchaBox) return;
+
+
+
+    recaptchaWidgetId = window.grecaptcha.render('recaptcha-box', {
+
+      sitekey: recaptchaSiteKey
+
+    });
+
+    recaptchaRendered = true;
+
+  };
+
+
+
+  window.sqInitRecaptcha = function() {
+
+    renderRecaptcha();
+
+  };
+
+
+
+  const loadRecaptcha = function() {
+
+    showRecaptcha();
+
+
+
+    if (recaptchaRendered) return;
+
+
+
+    if (window.grecaptcha && window.grecaptcha.render) {
+
+      renderRecaptcha();
+
+      return;
+
+    }
+
+
+
+    if (recaptchaScriptLoading) return;
+
+
+
+    recaptchaScriptLoading = true;
+
+
+
+    const script = document.createElement('script');
+
+    script.src = 'https://www.google.com/recaptcha/api.js?onload=sqInitRecaptcha&render=explicit';
+
+    script.async = true;
+
+    script.defer = true;
+
+    script.onerror = function() {
+
+      recaptchaScriptLoading = false;
+
+    };
+
+    document.head.appendChild(script);
+
+  };
+
+
+
+  const formFields = form.querySelectorAll('input:not([type="hidden"]), textarea, select');
+
+  formFields.forEach(function(field) {
+
+    field.addEventListener('focus', loadRecaptcha, { once: true });
+
+    field.addEventListener('input', loadRecaptcha, { once: true });
+
+    field.addEventListener('click', loadRecaptcha, { once: true });
+
+    field.addEventListener('pointerdown', loadRecaptcha, { once: true, passive: true });
+
+  });
+
+
+
+  form.addEventListener('submit', function(event) {
+    // Phone number validation
+    if (phoneInput && !phoneInput.isValidNumber()) {
+      event.preventDefault();
+      if (window.showFormMessage) {
+        window.showFormMessage(form, 'Please enter a valid phone number.', 'error');
+      } else {
+        alert('Please enter a valid phone number.');
+      }
+      return;
+    }
+
+    if (!recaptchaRendered) {
+      event.preventDefault();
+      loadRecaptcha();
+      if (window.showFormMessage) {
+        window.showFormMessage(form, 'Please complete the reCAPTCHA verification.', 'error');
+      } else {
+        alert('Please complete the reCAPTCHA verification.');
+      }
+      return;
+    }
+
+    const response = window.grecaptcha && recaptchaWidgetId !== null
+      ? window.grecaptcha.getResponse(recaptchaWidgetId)
+      : '';
+
+    if (!response) {
+      event.preventDefault();
+      showRecaptcha();
+      if (window.showFormMessage) {
+        window.showFormMessage(form, 'Please complete the reCAPTCHA verification.', 'error');
+      } else {
+        alert('Please complete the reCAPTCHA verification.');
+      }
+    }
+  });
+
+})();
+
+</script>
+
+@endpush
 
 
 

@@ -102,14 +102,49 @@ const setModalState = (shell, open) => {
 };
 
 const initHeader = () => {
+  const header = $(".site-header");
   const drawer = $("#mobile-drawer");
   const overlay = $("#mobile-overlay");
-  if (!drawer || !overlay) return;
+  if (!header || !drawer || !overlay) return;
+
+  let lastScrollY = window.scrollY;
+  let ticking = false;
+
+  const updateHeaderOnScroll = () => {
+    const currentScrollY = Math.max(window.scrollY, 0);
+    const delta = currentScrollY - lastScrollY;
+    const drawerIsOpen = drawer.classList.contains("is-open");
+
+    header.classList.toggle("site-header--scrolled", currentScrollY > 12);
+
+    if (drawerIsOpen || currentScrollY < 90) {
+      header.classList.remove("site-header--hidden");
+    } else if (delta > 8) {
+      header.classList.add("site-header--hidden");
+    } else if (delta < -8) {
+      header.classList.remove("site-header--hidden");
+    }
+
+    lastScrollY = currentScrollY;
+    ticking = false;
+  };
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(updateHeaderOnScroll);
+    },
+    { passive: true }
+  );
 
   const setDrawerState = (open) => {
     drawer.classList.toggle("is-open", open);
     overlay.classList.toggle("is-open", open);
     document.body.classList.toggle("overflow-hidden", open);
+    document.body.classList.toggle("mobile-menu-open", open);
+    if (open) header.classList.remove("site-header--hidden");
   };
 
   $("[data-mobile-open]")?.addEventListener("click", () => setDrawerState(true));
@@ -210,6 +245,64 @@ const setButtonLoading = (form, loading, text) => {
   button.textContent = loading ? text : button.dataset.originalText;
 };
 
+const showFormMessage = (form, message, type = "success") => {
+  let msgEl = form.querySelector(".form-feedback-message");
+  if (!msgEl) {
+    msgEl = document.createElement("div");
+    msgEl.className = "form-feedback-message";
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.parentNode.insertBefore(msgEl, submitBtn);
+    } else {
+      form.appendChild(msgEl);
+    }
+  }
+
+  msgEl.textContent = message;
+  msgEl.className = `form-feedback-message form-feedback-message--${type}`;
+  
+  Object.assign(msgEl.style, {
+    padding: "12px 16px",
+    borderRadius: "6px",
+    fontSize: "14px",
+    fontWeight: "600",
+    marginBottom: "16px",
+    textAlign: "center",
+    transition: "opacity 0.3s ease, transform 0.3s ease",
+    opacity: "1",
+    transform: "translateY(0)",
+    display: "block",
+  });
+
+  if (type === "success") {
+    Object.assign(msgEl.style, {
+      background: "#d1fae5",
+      color: "#065f46",
+      border: "1px solid #10b981",
+    });
+  } else {
+    Object.assign(msgEl.style, {
+      background: "#fee2e2",
+      color: "#991b1b",
+      border: "1px solid #f87171",
+    });
+  }
+
+  if (msgEl.timeoutId) {
+    clearTimeout(msgEl.timeoutId);
+  }
+
+  msgEl.timeoutId = setTimeout(() => {
+    msgEl.style.opacity = "0";
+    msgEl.style.transform = "translateY(-5px)";
+    msgEl.timeoutId = setTimeout(() => {
+      msgEl.style.display = "none";
+    }, 300);
+  }, 2000);
+};
+
+window.showFormMessage = showFormMessage;
+
 const serializeContactForm = (form) => {
   const data = new FormData();
   const phone = form.elements.phone?.value || "";
@@ -240,25 +333,27 @@ const initForms = () => {
       if (isFresher) {
         setButtonLoading(form, true, "Processing...");
         window.setTimeout(() => {
-          alert("Application sent successfully!");
+          showFormMessage(form, "Application sent successfully!", "success");
           form.reset();
           const nameNode = $("#fresher-file-name");
           if (nameNode) nameNode.textContent = "No file chosen";
           setButtonLoading(form, false, "Processing...");
-          setModalState($("#fresher-modal-shell"), false);
+          window.setTimeout(() => {
+            setModalState($("#fresher-modal-shell"), false);
+          }, 2000);
         }, 1200);
         return;
       }
 
       if (!getRecaptchaToken(form)) {
-        alert(isInternship ? "Please complete the ReCAPTCHA" : "Please verify the captcha");
+        showFormMessage(form, isInternship ? "Please complete the ReCAPTCHA" : "Please verify the captcha", "error");
         return;
       }
 
       if (isInternship) {
         setButtonLoading(form, true, "Sending...");
         window.setTimeout(() => {
-          alert("Internship request submitted successfully!");
+          showFormMessage(form, "Internship request submitted successfully!", "success");
           form.reset();
           setButtonLoading(form, false, "Sending...");
         }, 1200);
@@ -290,7 +385,7 @@ const initForms = () => {
           throw new Error(firstError || result.message || "Unable to send message");
         }
 
-        alert(result.message || "message sent!");
+        showFormMessage(form, result.message || "Message sent successfully!", "success");
         form.reset();
 
         try {
@@ -299,7 +394,7 @@ const initForms = () => {
           // Ignore routes without an active widget.
         }
       } catch (error) {
-        alert(error.message || "error sending message");
+        showFormMessage(form, error.message || "Error sending message", "error");
       } finally {
         setButtonLoading(form, false, "sending...");
       }
@@ -494,7 +589,9 @@ const initTestimonials = () => {
     const triggers = $$("[data-testimonial-trigger]", section);
     if (!viewport || !track || !panels.length || !triggers.length) return;
 
-    let active = 0;
+    let active = triggers.findIndex((trigger) => trigger.classList.contains("is-active"));
+    if (active < 0) active = panels.findIndex((panel) => panel.classList.contains("is-active"));
+    if (active < 0) active = 0;
     let autoplayId = null;
     let isPaused = false;
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -542,7 +639,7 @@ const initTestimonials = () => {
       autoplayId = window.setInterval(() => {
         active = (active + 1) % panels.length;
         render();
-      }, 6500);
+      }, 3000);
     };
 
     const moveTo = (nextIndex) => {
@@ -598,6 +695,68 @@ const initTestimonials = () => {
   });
 };
 
+const initWebTestimonials = () => {
+  $$("[data-web-testimonials-section]").forEach((section) => {
+    const copy = $("[data-web-testimonial-copy]", section);
+    const people = $$("[data-web-testimonial-person]", section);
+    if (!copy || people.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let active = people.findIndex((person) => person.classList.contains("is-active"));
+    if (active < 0) active = 0;
+    let timer = null;
+    let paused = false;
+
+    const render = () => {
+      people.forEach((person, index) => {
+        const isActive = index === active;
+        person.classList.toggle("is-active", isActive);
+        person.setAttribute("aria-current", String(isActive));
+      });
+
+      const nextText = people[active]?.dataset.testimonialText;
+      if (!nextText) return;
+
+      copy.classList.remove("is-changing");
+      window.requestAnimationFrame(() => {
+        copy.classList.add("is-changing");
+        window.setTimeout(() => {
+          copy.textContent = `“${nextText}”`;
+          copy.classList.remove("is-changing");
+        }, 150);
+      });
+    };
+
+    const start = () => {
+      if (paused) return;
+      window.clearInterval(timer);
+      timer = window.setInterval(() => {
+        active = (active + 1) % people.length;
+        render();
+      }, 3000);
+    };
+
+    people.forEach((person, index) => {
+      person.addEventListener("click", () => {
+        active = index;
+        render();
+        start();
+      });
+    });
+
+    section.addEventListener("mouseenter", () => {
+      paused = true;
+      window.clearInterval(timer);
+    });
+    section.addEventListener("mouseleave", () => {
+      paused = false;
+      start();
+    });
+
+    render();
+    start();
+  });
+};
+
 const initPortfoliosPage = () => {
   const pageData = parseJsonScript("portfolio-page-data");
   const modal = $("#portfolio-modal");
@@ -605,17 +764,11 @@ const initPortfoliosPage = () => {
   const closeButton = $("#portfolio-modal-close");
   const grid = $("#portfolio-grid");
   const filterButtons = $$("[data-portfolio-filter]");
-  const pagination = $("#portfolio-pagination");
-  const previousButton = $("#portfolio-prev");
-  const nextButton = $("#portfolio-next");
-  const pageState = $("#portfolio-page-state");
   const behanceWrap = $("#portfolio-behance-wrap");
   if (!modal || !contentNode || !grid || !filterButtons.length) return;
 
   const items = Array.isArray(pageData?.items) ? pageData.items : [];
-  const itemsPerPage = Number(pageData?.itemsPerPage || "6");
   let activeCategory = String(pageData?.activeCategory || "").trim() || "wordpress-development";
-  let currentPage = 1;
 
   const closeModal = () => {
     modal.hidden = true;
@@ -647,34 +800,14 @@ const initPortfoliosPage = () => {
     });
   };
 
-  const updatePagination = (totalPages) => {
-    if (!pagination || !previousButton || !nextButton || !pageState) return;
-
-    if (totalPages <= 1) {
-      pagination.classList.add("hidden");
-      behanceWrap?.classList.add("pt-10");
-      return;
-    }
-
-    pagination.classList.remove("hidden");
-    behanceWrap?.classList.remove("pt-10");
-    pageState.textContent = `${currentPage} / ${totalPages}`;
-    previousButton.disabled = currentPage === 1;
-    nextButton.disabled = currentPage === totalPages;
-  };
-
   const renderPortfolioPage = () => {
     const categoryItems = filteredItems();
-    const totalPages = Math.ceil(categoryItems.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const visibleItems = categoryItems.slice(startIndex, startIndex + itemsPerPage);
 
-    grid.innerHTML = visibleItems.length
-      ? visibleItems.map((item) => renderPortfolioCard(item)).join("")
+    grid.innerHTML = categoryItems.length
+      ? categoryItems.map((item) => renderPortfolioCard(item)).join("")
       : renderPortfolioEmptyState();
 
     updateFilterButtons();
-    updatePagination(totalPages);
     bindPortfolioCardListeners();
   };
 
@@ -684,24 +817,8 @@ const initPortfoliosPage = () => {
       if (!category || category === activeCategory) return;
 
       activeCategory = category;
-      currentPage = 1;
       renderPortfolioPage();
     });
-  });
-
-  previousButton?.addEventListener("click", () => {
-    if (currentPage === 1) return;
-
-    currentPage -= 1;
-    renderPortfolioPage();
-  });
-
-  nextButton?.addEventListener("click", () => {
-    const totalPages = Math.ceil(filteredItems().length / itemsPerPage);
-    if (currentPage >= totalPages) return;
-
-    currentPage += 1;
-    renderPortfolioPage();
   });
 
   closeButton?.addEventListener("click", closeModal);
@@ -756,6 +873,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initCertificationsSlider();
   initStatsCounters();
   initTestimonials();
+  initWebTestimonials();
   initPortfoliosPage();
   initFaqPage();
 });
