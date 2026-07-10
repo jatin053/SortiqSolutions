@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 class Recaptcha
 {
-    private const PRODUCTION_SITE_KEY = '6LfPm9orAAAAAITRksBgnr-QOyftwOnldiTKb7BS';
+    private const PRODUCTION_SITE_KEY = '6LeSESotAAAAADkXuOK3rjdMDYOQOjgK90V8ujaO';
     private const LOCAL_TEST_SITE_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
     private const LOCAL_TEST_SECRET_KEY = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe';
 
@@ -25,7 +25,7 @@ class Recaptcha
             return self::LOCAL_TEST_SITE_KEY;
         }
 
-        return self::PRODUCTION_SITE_KEY;
+        return config('services.recaptcha.site_key') ?: self::PRODUCTION_SITE_KEY;
     }
 
     public static function secretKeyForRequest(?Request $request = null): ?string
@@ -38,14 +38,13 @@ class Recaptcha
             return self::LOCAL_TEST_SECRET_KEY;
         }
 
-        return config('services.recaptcha.secret_key');
+        return config('services.recaptcha.secret_key') ?: '6LeSESotAAAAAMX3I9zkF54kqznScmTFBfFSyTqx';
     }
 
     private static function usesLocalTestKeys(?Request $request = null): bool
     {
         $host = $request?->getHost();
 
-        return in_array($host, ['localhost', '127.0.0.1', 'staging.sortiqsolutions.com'], true)
-            || ($host && str_starts_with($host, 'staging.'));
+        return in_array($host, ['localhost', '127.0.0.1'], true);
     }
 }
