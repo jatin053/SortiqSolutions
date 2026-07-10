@@ -12,6 +12,10 @@ class Recaptcha
 
     public static function enabledForRequest(?Request $request = null): bool
     {
+        if (self::usesLocalTestKeys($request)) {
+            return false;
+        }
+
         return (bool) config('services.recaptcha.enabled');
     }
 
