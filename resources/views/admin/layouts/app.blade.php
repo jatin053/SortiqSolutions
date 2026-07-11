@@ -1,3 +1,4 @@
+{{-- Contributions by mrabhi2k3 (https://github.com/mrabhi2k3) --}}
 @php
     $pageFilterGroups = collect(\App\Support\Seo\SeoPageCatalog::pages())
         ->groupBy('section')
@@ -73,11 +74,41 @@
             'page_filter_groups' => $pageFilterGroups,
         ],
         [
-            'label' => 'Messages',
-            'route' => route('admin.contact-messages.index'),
+            'label' => 'Sitemap Manager',
+            'route' => route('admin.pages.edit', ['view' => 'xml_urls']),
+            'match' => 'admin.pages.*',
+            'icon' => 'SM',
+            'caption' => 'Manage sitemap exclusions and active XML URLs.',
+        ],
+        [
+            'label' => 'Inquiries',
+            'route' => route('admin.contact-messages.index', ['filter' => 'inquiry']),
             'match' => 'admin.contact-messages.*',
-            'icon' => 'CM',
-            'caption' => 'Inbound contact requests and follow-up.',
+            'filter' => 'inquiry',
+            'icon' => 'IQ',
+            'caption' => 'General contact messages and follow-up.',
+        ],
+        [
+            'label' => 'Applications',
+            'route' => route('admin.contact-messages.index', ['filter' => 'application']),
+            'match' => 'admin.contact-messages.*',
+            'filter' => 'application',
+            'icon' => 'AP',
+            'caption' => 'Careers applications and inquiries.',
+        ],
+        [
+            'label' => 'Internships',
+            'route' => route('admin.internship-applications.index'),
+            'match' => 'admin.internship-applications.*',
+            'icon' => 'IN',
+            'caption' => 'Internship applications and student details.',
+        ],
+        [
+            'label' => 'Fresher Connect',
+            'route' => route('admin.fresher-hirings.index'),
+            'match' => 'admin.fresher-hirings.*',
+            'icon' => 'FH',
+            'caption' => 'Fresher Connect applications and resumes.',
         ],
         [
             'label' => 'Settings',
@@ -88,9 +119,21 @@
         ],
     ];
 
-    $currentSection = collect($navigationItems)->first(
-        fn (array $item) => request()->routeIs($item['match'])
-    ) ?? $navigationItems[0];
+    $currentSection = collect($navigationItems)->first(function (array $item) {
+        if (request()->routeIs($item['match'])) {
+            if (isset($item['filter'])) {
+                return request()->query('filter', 'inquiry') === $item['filter'];
+            }
+            if ($item['label'] === 'Sitemap Manager') {
+                return request()->query('view') === 'xml_urls';
+            }
+            if ($item['label'] === 'Pages') {
+                return request()->query('view') !== 'xml_urls';
+            }
+            return true;
+        }
+        return false;
+    }) ?? $navigationItems[0];
 
     $userName = auth()->user()->name ?? 'Admin';
     $userEmail = auth()->user()->email ?? 'admin@sortiq.local';
@@ -150,8 +193,18 @@
         <ul class="sidebar-nav">
             @foreach ($navigationItems as $item)
                 @if (! empty($item['page_filter_groups']))
+                    @php
+                        $isDropdownActive = false;
+                        if (request()->routeIs($item['match'])) {
+                            if ($item['label'] === 'Pages') {
+                                $isDropdownActive = request()->query('view') !== 'xml_urls';
+                            } else {
+                                $isDropdownActive = true;
+                            }
+                        }
+                    @endphp
                     <li
-                        class="{{ request()->routeIs($item['match']) ? 'active is-submenu-open' : '' }}"
+                        class="{{ $isDropdownActive ? 'active is-submenu-open' : '' }}"
                         data-sidebar-dropdown-item
                     >
                         <div class="sidebar-dropdown-row">
@@ -202,7 +255,21 @@
                         </div>
                     </li>
                 @else
-                    <li class="{{ request()->routeIs($item['match']) ? 'active' : '' }}">
+                    @php
+                        $isActive = false;
+                        if (request()->routeIs($item['match'])) {
+                            if (isset($item['filter'])) {
+                                $isActive = request()->query('filter', 'inquiry') === $item['filter'];
+                            } elseif ($item['label'] === 'Sitemap Manager') {
+                                $isActive = request()->query('view') === 'xml_urls';
+                            } elseif ($item['label'] === 'Pages') {
+                                $isActive = request()->query('view') !== 'xml_urls';
+                            } else {
+                                $isActive = true;
+                            }
+                        }
+                    @endphp
+                    <li class="{{ $isActive ? 'active' : '' }}">
                         <a href="{{ $item['route'] }}">
                             <span class="nav-icon">{{ $item['icon'] }}</span>
                             <span class="sidebar-link-copy">

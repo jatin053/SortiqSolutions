@@ -3,6 +3,8 @@
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\ClientLogoController;
 use App\Http\Controllers\Admin\ContactMessageController as AdminContactMessageController;
+use App\Http\Controllers\Admin\FresherHiringController as AdminFresherHiringController;
+use App\Http\Controllers\Admin\InternshipApplicationController as AdminInternshipApplicationController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PageMetaController;
 use App\Http\Controllers\Admin\PortfolioController as AdminPortfolioController;
@@ -16,6 +18,7 @@ use App\Http\Controllers\Frontend\HomeController as FrontendHomeController;
 use App\Http\Controllers\Frontend\PortfolioController as FrontendPortfolioController;
 use App\Http\Controllers\Frontend\ReviewController as FrontendReviewController;
 use App\Http\Controllers\Frontend\VideoController as FrontendVideoController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 $frontendRoutes = config('frontend-routes');
@@ -27,8 +30,11 @@ $registerViewRoutes = function (array $routes, string $namePrefix = 'frontend.')
 };
 
 $registerSlugRoutes = function (array $slugs, string $viewPrefix, string $namePrefix) : void {
-    foreach ($slugs as $slug) {
-        Route::view("/{$slug}", "{$viewPrefix}.{$slug}")->name("{$namePrefix}{$slug}");
+    foreach ($slugs as $uri => $viewName) {
+        if (is_int($uri)) {
+             $uri = $viewName;
+        }
+        Route::view("/{$uri}", "{$viewPrefix}.{$viewName}")->name("{$namePrefix}{$viewName}");
     }
 };
 
@@ -53,6 +59,8 @@ $registerAdminResourceRoutes = function (string $prefix, string $name, string $c
 };
 
 Route::get('/', [FrontendHomeController::class, 'index'])->name('frontend.home');
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::redirect('/sitemap_index.xml', '/sitemap.xml', 301);
 Route::redirect('/sortiqsolution', '/', 301);
 
 $staticPageRoutes = $frontendRoutes['pages'];
@@ -62,8 +70,11 @@ $registerViewRoutes($staticPageRoutes);
 $registerRedirects($frontendRoutes['legacy_pages']);
 
 Route::get('/reviews', [FrontendReviewController::class, 'index'])->name('frontend.reviews');
-Route::get('/reviews/{slug}', [FrontendReviewController::class, 'show'])->name('frontend.reviews.show');
+Route::get('/reviews/{slug}', fn () => redirect()->route('frontend.reviews'))->name('frontend.reviews.show');
 Route::get('/clients', [FrontendClientController::class, 'index'])->name('frontend.clients');
+Route::get('/clients/page/{page}', [FrontendClientController::class, 'index'])
+    ->whereNumber('page')
+    ->name('frontend.clients.page');
 Route::get('/videos', [FrontendVideoController::class, 'index'])->name('frontend.videos');
 Route::get('/portfolios', [FrontendPortfolioController::class, 'index'])->name('frontend.portfolio');
 Route::redirect('/portfolio', '/portfolios', 301);
@@ -76,16 +87,12 @@ Route::prefix('blog')->name('frontend.blog.')->group(function () use (
     Route::get('/{slug}', [FrontendBlogController::class, 'show'])->name('show');
 });
 
-Route::prefix('services')->name('frontend.services.')->group(function () use (
-    $frontendRoutes,
-    $registerRedirects,
-    $registerSlugRoutes
-) {
+Route::prefix('services')->name('frontend.services.')->group(function () {
     Route::view('/', 'frontend.services.services-page')->name('index');
-
-    $registerSlugRoutes($frontendRoutes['services'], 'frontend.services', '');
-    $registerRedirects($frontendRoutes['legacy_services'], '/services');
 });
+
+$registerSlugRoutes($frontendRoutes['services'], 'frontend.services', 'frontend.services.');
+$registerRedirects($frontendRoutes['legacy_services'], '');
 
 Route::redirect('/admin', '/sortiqadmin', 301);
 
@@ -107,6 +114,8 @@ Route::prefix('sortiqadmin')->name('admin.')->group(function () use ($registerAd
         Route::controller(PageMetaController::class)->group(function () {
             Route::get('/pages', 'edit')->name('pages.edit');
             Route::put('/pages', 'update')->name('pages.update');
+            Route::post('/pages/toggle-sitemap', 'toggleSitemap')->name('pages.toggle-sitemap');
+            Route::post('/pages/toggle-sitemap-url', 'toggleSitemapUrl')->name('pages.toggle-sitemap-url');
         });
 
         $registerAdminResourceRoutes('blogs', 'blogs', BlogController::class, 'blog');
@@ -121,6 +130,26 @@ Route::prefix('sortiqadmin')->name('admin.')->group(function () use ($registerAd
             ->group(function () {
                 Route::get('/', 'index')->name('index');
                 Route::get('/{contactMessage}', 'show')->name('show');
+                Route::get('/{contactMessage}/download', 'downloadAttachment')->name('download');
+            });
+
+        Route::prefix('fresher-hirings')
+            ->name('fresher-hirings.')
+            ->controller(AdminFresherHiringController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/{fresherHiring}', 'show')->name('show');
+                Route::get('/{fresherHiring}/download', 'downloadAttachment')->name('download');
+                Route::patch('/{fresherHiring}/status', 'updateStatus')->name('update-status');
+            });
+
+        Route::prefix('internship-applications')
+            ->name('internship-applications.')
+            ->controller(AdminInternshipApplicationController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/{internshipApplication}', 'show')->name('show');
+                Route::patch('/{internshipApplication}/status', 'updateStatus')->name('update-status');
             });
     });
 });

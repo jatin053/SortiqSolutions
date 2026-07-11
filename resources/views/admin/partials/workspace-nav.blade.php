@@ -50,11 +50,41 @@
             'caption' => 'Page metadata',
         ],
         [
-            'label' => 'Messages',
-            'route' => route('admin.contact-messages.index'),
+            'label' => 'Sitemap Manager',
+            'route' => route('admin.pages.edit', ['view' => 'xml_urls']),
+            'match' => 'admin.pages.*',
+            'icon' => 'SM',
+            'caption' => 'Sitemap visibility & URLs',
+        ],
+        [
+            'label' => 'Inquiries',
+            'route' => route('admin.contact-messages.index', ['filter' => 'inquiry']),
             'match' => 'admin.contact-messages.*',
-            'icon' => 'CM',
-            'caption' => 'Inbound enquiries',
+            'filter' => 'inquiry',
+            'icon' => 'IQ',
+            'caption' => 'General messages',
+        ],
+        [
+            'label' => 'Applications',
+            'route' => route('admin.contact-messages.index', ['filter' => 'application']),
+            'match' => 'admin.contact-messages.*',
+            'filter' => 'application',
+            'icon' => 'AP',
+            'caption' => 'Resumes & Careers',
+        ],
+        [
+            'label' => 'Internships',
+            'route' => route('admin.internship-applications.index'),
+            'match' => 'admin.internship-applications.*',
+            'icon' => 'IN',
+            'caption' => 'Intern submissions',
+        ],
+        [
+            'label' => 'Fresher Connect',
+            'route' => route('admin.fresher-hirings.index'),
+            'match' => 'admin.fresher-hirings.*',
+            'icon' => 'FH',
+            'caption' => 'Fresher submissions',
         ],
         [
             'label' => 'Settings',
@@ -65,9 +95,21 @@
         ],
     ];
 
-    $currentSection = $currentSection ?? collect($adminSections)->first(
-        fn (array $section) => request()->routeIs($section['match'])
-    ) ?? $adminSections[0];
+    $currentSection = $currentSection ?? collect($adminSections)->first(function (array $section) {
+        if (request()->routeIs($section['match'])) {
+            if (isset($section['filter'])) {
+                return request()->query('filter', 'inquiry') === $section['filter'];
+            }
+            if ($section['label'] === 'Sitemap Manager') {
+                return request()->query('view') === 'xml_urls';
+            }
+            if ($section['label'] === 'Pages') {
+                return request()->query('view') !== 'xml_urls';
+            }
+            return true;
+        }
+        return false;
+    }) ?? $adminSections[0];
 @endphp
 
 <nav class="admin-workspace-bar" aria-label="Admin sections">
@@ -82,9 +124,23 @@
 
     <div class="admin-workspace-links">
         @foreach ($adminSections as $section)
+            @php
+                $isActive = false;
+                if (request()->routeIs($section['match'])) {
+                    if (isset($section['filter'])) {
+                        $isActive = request()->query('filter', 'inquiry') === $section['filter'];
+                    } elseif ($section['label'] === 'Sitemap Manager') {
+                        $isActive = request()->query('view') === 'xml_urls';
+                    } elseif ($section['label'] === 'Pages') {
+                        $isActive = request()->query('view') !== 'xml_urls';
+                    } else {
+                        $isActive = true;
+                    }
+                }
+            @endphp
             <a
                 href="{{ $section['route'] }}"
-                class="admin-workspace-link {{ request()->routeIs($section['match']) ? 'is-active' : '' }}"
+                class="admin-workspace-link {{ $isActive ? 'is-active' : '' }}"
             >
                 <span class="admin-workspace-icon">{{ $section['icon'] }}</span>
                 <span class="admin-workspace-copy">

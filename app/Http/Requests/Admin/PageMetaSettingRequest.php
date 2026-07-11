@@ -21,6 +21,8 @@ class PageMetaSettingRequest extends FormRequest
             'pages.*.route_name' => ['required', 'string', Rule::in(SeoPageCatalog::routeNames())],
             'pages.*.title' => ['nullable', 'string', 'max:255'],
             'pages.*.description' => ['nullable', 'string', 'max:320'],
+            'pages.*.keywords' => ['nullable', 'string', 'max:500'],
+            'pages.*.exclude_sitemap' => ['nullable', 'boolean'],
         ];
     }
 }
