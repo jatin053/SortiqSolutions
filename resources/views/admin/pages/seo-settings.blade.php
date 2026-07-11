@@ -64,7 +64,7 @@
                             <button type="submit" class="btn">{{ $selectedPageDetails ? 'Open Another Page' : 'Open Page' }}</button>
 
                             @if ($selectedPage)
-                                <a href="{{ route('admin.pages.edit') }}" class="btn">Back to Picker</a>
+                                <a href="{{ route('admin.pages.edit', ['view' => request('view')]) }}" class="btn">Back to Picker</a>
                             @endif
                         </div>
                     </div>
@@ -78,6 +78,7 @@
             @csrf
             @method('PUT')
             <input type="hidden" name="selected_page" value="{{ $selectedPage }}">
+            <input type="hidden" name="return_view" value="{{ request('view') }}">
 
             <div class="page-meta-groups">
                 @foreach ($pageSections as $section => $sectionPages)
@@ -154,7 +155,7 @@
                                 @endforeach
                             </div>
                         </div>
-                    </section>
+                    </section>  
                 @endforeach
             </div>
 
@@ -204,6 +205,13 @@
                                             <div style="font-size: 12px; color: #718096; margin-top: 2px;">
                                                 {{ $url['label'] }}
                                             </div>
+                                            <div style="margin-top: 8px; font-size: 12px; color: #4a5568; background: #f7fafc; padding: 8px 12px; border-radius: 4px; border: 1px solid #edf2f7; line-height: 1.4; text-align: left;">
+                                                <div style="margin-bottom: 2px;"><strong>Title:</strong> <span style="color: #2d3748;">{{ $url['title'] ?? '(None)' }}</span></div>
+                                                <div style="margin-bottom: 2px;"><strong>Description:</strong> <span style="color: #4a5568;">{{ $url['description'] ?? '(None)' }}</span></div>
+                                                @if(!empty($url['keywords']))
+                                                    <div><strong>Keywords:</strong> <span style="color: #718096;">{{ $url['keywords'] }}</span></div>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td style="padding: 15px 10px;">
                                             <span style="font-size: 14px; color: #4a5568; font-weight: 500;">{{ $url['section'] }}</span>
@@ -226,7 +234,7 @@
                                                 </form>
                                                 @if ($url['type'] === 'static')
                                                     <span style="color: #cbd5e0;">|</span>
-                                                    <a href="{{ route('admin.pages.edit', ['page' => $url['route_name']]) }}" style="font-size: 13px; font-weight: 600; color: #3182ce; text-decoration: none; padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 4px; background: white; transition: all 0.2s;">
+                                                    <a href="{{ route('admin.pages.edit', ['page' => $url['route_name'], 'view' => 'xml_urls']) }}" style="font-size: 13px; font-weight: 600; color: #3182ce; text-decoration: none; padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 4px; background: white; transition: all 0.2s;">
                                                         Edit Meta
                                                     </a>
                                                 @elseif ($url['type'] === 'blog')
@@ -261,11 +269,18 @@
                                 @forelse ($allPages as $page)
                                     <tr>
                                         <td style="padding: 15px 10px;">
-                                            <a href="{{ route("admin.pages.edit", ["page" => $page["route_name"]]) }}" class="review-title" style="font-weight: 600; font-size: 15px; color: #2d3748; text-decoration: none;">
+                                            <a href="{{ route("admin.pages.edit", ["page" => $page["route_name"], "view" => "catalog"]) }}" class="review-title" style="font-weight: 600; font-size: 15px; color: #2d3748; text-decoration: none;">
                                                 {{ $page["label"] }}
                                             </a>
                                             <div style="font-size: 12px; color: #718096; margin-top: 2px;">
                                                 {{ $page["section"] }}
+                                            </div>
+                                            <div style="margin-top: 8px; font-size: 12px; color: #4a5568; background: #f7fafc; padding: 8px 12px; border-radius: 4px; border: 1px solid #edf2f7; line-height: 1.4; text-align: left;">
+                                                <div style="margin-bottom: 2px;"><strong>Title:</strong> <span style="color: #2d3748;">{{ $page['title'] ?? '(None)' }}</span></div>
+                                                <div style="margin-bottom: 2px;"><strong>Description:</strong> <span style="color: #4a5568;">{{ $page['description'] ?? '(None)' }}</span></div>
+                                                @if(!empty($page['keywords']))
+                                                    <div><strong>Keywords:</strong> <span style="color: #718096;">{{ $page['keywords'] }}</span></div>
+                                                @endif
                                             </div>
                                         </td>
                                         <td style="padding: 15px 10px;">
@@ -290,7 +305,7 @@
                                                     </button>
                                                 </form>
                                                 <span style="color: #cbd5e0;">|</span>
-                                                <a href="{{ route("admin.pages.edit", ["page" => $page["route_name"]]) }}" style="font-size: 13px; font-weight: 600; color: #3182ce; text-decoration: none; padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 4px; background: white; transition: all 0.2s;">
+                                                <a href="{{ route("admin.pages.edit", ["page" => $page["route_name"], "view" => "catalog"]) }}" style="font-size: 13px; font-weight: 600; color: #3182ce; text-decoration: none; padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 4px; background: white; transition: all 0.2s;">
                                                     Edit Meta
                                                 </a>
                                             </div>

@@ -46,9 +46,12 @@ class PageMetaController extends Controller
 
         PageMeta::clearCache();
 
+        $returnView = $request->input('return_view');
+
         return redirect()
             ->route('admin.pages.edit', array_filter([
                 'page' => $selectedPage,
+                'view' => $returnView,
             ]))
             ->with('status', 'Page metadata updated successfully.');
     }
@@ -365,6 +368,22 @@ class PageMetaController extends Controller
                 }
             }
 
+            $storedValues = $this->storedValuesForRoute($storedPageMeta, $name);
+            $defaultTitle = $label;
+            $defaultDescription = '';
+            $defaultKeywords = '';
+            foreach (SeoPageCatalog::pages() as $p) {
+                if ($p['route_name'] === $name) {
+                    $defaultTitle = $p['title'];
+                    $defaultDescription = $p['description'];
+                    $defaultKeywords = $p['keywords'] ?? '';
+                    break;
+                }
+            }
+            $staticTitle = trim((string) ($storedValues['title'] ?? '')) ?: $defaultTitle;
+            $staticDescription = trim((string) ($storedValues['description'] ?? '')) ?: $defaultDescription;
+            $staticKeywords = trim((string) ($storedValues['keywords'] ?? '')) ?: $defaultKeywords;
+
             $urls[] = [
                 'type' => 'static',
                 'route_name' => $name,
@@ -372,6 +391,9 @@ class PageMetaController extends Controller
                 'section' => $section,
                 'path' => $path,
                 'exclude_sitemap' => $isBlocked,
+                'title' => $staticTitle,
+                'description' => $staticDescription,
+                'keywords' => $staticKeywords,
             ];
         }
 
@@ -380,7 +402,7 @@ class PageMetaController extends Controller
             $blogs = \App\Models\Blog::query()
                 ->published()
                 ->whereNotNull('slug')
-                ->get(['id', 'title', 'slug']);
+                ->get(['id', 'title', 'slug', 'meta_title', 'meta_description', 'meta_keywords', 'excerpt']);
 
             foreach ($blogs as $blog) {
                 $path = '/blog/' . $blog->slug;
@@ -394,6 +416,9 @@ class PageMetaController extends Controller
                     'path' => $path,
                     'exclude_sitemap' => $isBlocked,
                     'blog_slug' => $blog->slug,
+                    'title' => trim((string) ($blog->meta_title ?? '')) ?: $blog->title,
+                    'description' => trim((string) ($blog->meta_description ?? '')) ?: $blog->excerpt,
+                    'keywords' => trim((string) ($blog->meta_keywords ?? '')) ?: '',
                 ];
             }
         } catch (\Throwable $e) {
